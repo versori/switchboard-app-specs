@@ -1,0 +1,317 @@
+openapi: 3.0.3
+info:
+  title: Switchboard API
+  description: The Switchboard API provides users the ability to manage their Apps, Integrations and Workflows
+  version: 0.0.1-alpha.0
+servers:
+  - url: "https://api.switchboard.versori.io/v1alpha1/"
+    description: Production
+paths:
+  /organisations/{organisationId}/apps:
+    post:
+      operationId: CreateApp
+      description: |
+        Create a new App for the provided organisation
+      tags:
+        - apps
+      parameters:
+        - name: organisationId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "101"
+      requestBody:
+        $ref: '#/components/requestBodies/CreateAppRequest'
+      responses:
+        200:
+          $ref: '#/components/responses/GetAppResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  schemas:
+    App:
+      type: object
+      properties:
+        id:
+          type: string
+        orgId:
+          type: string
+        name:
+          type: string
+        public:
+          type: boolean
+        server:
+          $ref: '#/components/schemas/Server'
+        schemaMetadata:
+          $ref: '#/components/schemas/SchemaMetadata'
+        supportedAuthConfigs:
+          description: |
+            SupportedAuthConfigs is a list of authentication standards which can be used to connect a user's account to
+            this app. At least one auth type needs to be valid for the App to be used by a user.
+          type: array
+          items:
+            $ref: '#/components/schemas/AppAuthConfig'
+        imageUrl:
+          type: string
+        schema:
+          $ref: '#/components/schemas/Schema'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - orgId
+        - name
+        - public
+        - server
+        - schemaMetadata
+        - schema
+        - createdAt
+        - updatedAt
+    SchemaMetadata:
+      type: object
+      properties:
+        type:
+          description: |
+            Type denotes the type of schema the corresponding App is backed by. Currently the only supported value is
+            "openapi", but other types such as "soap", "graphql" and "grpc" are on the roadmap.
+          type: string
+        version:
+          description: |
+            Version denotes the version of the schema specification. This property is contextual based on the schema
+            type, for example openapi schemas will contain the OpenAPI specification version (currently only 3.0.x is
+            supported), but `grpc` APIs could be "proto2" or "proto3".
+          type: string
+        url:
+          description: |
+            URL is the private address for accessing the schema. This is not guaranteed to be publicly accessible and
+            could be a non-HTTP protocol (i.e. gs:// or s3://)
+          type: string
+      required:
+        - type
+        - version
+        - url
+    Schema:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          description: |
+            Type denotes the type of schema the corresponding App is backed by. Currently the only supported value is
+            "openapi", but other types such as "soap", "graphql" and "grpc" are on the roadmap.
+          type: string
+        version:
+          description: |
+            Version denotes the version of the schema specification. This property is contextual based on the schema
+            type, for example openapi schemas will contain the OpenAPI specification version (currently only 3.0.x is
+            supported), but `grpc` APIs could be "proto2" or "proto3".
+          type: string
+        sourceUrl:
+          description: |
+            URL is the private address for accessing the schema. This is not guaranteed to be publicly accessible and
+            could be a non-HTTP protocol (i.e. gs:// or s3://)
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - version
+        - sourceUrl
+        - createdAt
+        - updatedAt
+    AppAuthConfig:
+      description: |
+        AppAuthConfig describes how an organisation can authenticate with an app.
+      type: object
+      properties:
+        type:
+          description: |
+            Type denotes the method of authentication. Valid values are: `"oidc"`, `"oauth2"` or `"apikey"`.
+          type: string
+        isValid:
+          description: |
+            IsValid is true if and only if the `data` field is populated with all the required information to enable
+            an organisation to connect to the App via this auth type. It is allowed for an App to have invalid auth
+            configs providing there is at least one valid.
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AppAuthConfigData'
+      required:
+        - type
+        - isValid
+        - data
+    AppAuthConfigData:
+      type: object
+      description: |
+        AppAuthConfigData should JSON-marshal to one of the types specified in the jsonschema oneOf:
+
+        - AppAuthConfigOIDC
+        - AppAuthConfigOAuth2
+        - AppAuthConfigApiKey
+      oneOf:
+        - $ref: '#/components/schemas/AppAuthConfigOIDC'
+        - $ref: '#/components/schemas/AppAuthConfigOAuth2'
+        - $ref: '#/components/schemas/AppAuthConfigApiKey'
+    AppAuthConfigOIDC:
+      description: |
+        AppAuthConfigOIDC specifies the configuration for authenticating using the OpenID Connect specification.
+      type: object
+      properties:
+        discoveryUrl:
+          description:
+            Takes precedent over the endpoint properties. If this property is set, it will be queried and override
+            any defined endpoint properties.
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          description: |
+            ClientSecret is the OAuth2.0 client's secret. This should be write-only, and not be viewable after
+            creation.
+          type: string
+        scopes:
+          $ref: '#/components/schemas/Scopes'
+    AppAuthConfigOAuth2:
+      type: object
+      properties:
+        authorizationEndpoint:
+          type: string
+        tokenEndpoint:
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          description: |
+            ClientSecret is the OAuth2.0 client's secret. This should be write-only, and not be viewable after
+            creation.
+          type: string
+        scopes:
+          $ref: '#/components/schemas/Scopes'
+    AppAuthConfigApiKey:
+      type: object
+      properties:
+        name:
+          description: |
+            Name is the header, query param or cookie name which the API key should be provided as.
+          type: string
+        in:
+          description: |
+            In denotes where the API key should be set when calling the API. Possible values are: `"query"`,
+            `"header"` or `"cookie"`.
+          type: string
+      required:
+        - name
+        - in
+    AppAuthConfigCreate:
+      description: |
+        AppAuthConfigCreate describes how an organisation can authenticate with an app.
+      type: object
+      properties:
+        type:
+          description: |
+            Type denotes the method of authentication. Valid values are: `"oidc"`, `"oauth2"` or `"apikey"`.
+          type: string
+        data:
+          $ref: '#/components/schemas/AppAuthConfigData'
+      required:
+        - type
+        - data
+    AppCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        public:
+          type: boolean
+        server:
+          $ref: '#/components/schemas/Server'
+        authConfigs:
+          description: |
+            AuthConfigs is a list of authentication standards which can be used to connect a user's account to
+            this app. At least one auth type needs to be valid for the App to be used by a user.
+          type: array
+          items:
+            $ref: '#/components/schemas/AppAuthConfigCreate'
+        imageUrl:
+          type: string
+        schemaId:
+          description: The ID of the Schema instance.
+          type: string
+      required:
+        - id
+        - orgId
+        - name
+        - public
+        - server
+        - authConfigs
+        - schemaId
+    Server:
+      properties:
+        name:
+          description: |
+            Description is a human-friendly name for this server address. If a friendly name isn't available then this
+            defaults to the URL.
+          type: string
+        url:
+          description: |
+            URL is the server address listening for requests.
+          type: string
+      required:
+        - name
+        - url
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        extensions:
+          type: object
+      required:
+        - code
+        - message
+  requestBodies:
+    CreateAppRequest:
+      description: |
+        Payload to create a new App.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppCreate'
+  responses:
+    GetAppResponse:
+      description: A single App result
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/App'
+    ErrorResponse:
+      description: The default error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: query
+      name: api_key
+security:
+  - apiKey: []
