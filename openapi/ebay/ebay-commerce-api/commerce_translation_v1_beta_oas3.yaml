@@ -1,0 +1,166 @@
+openapi: 3.0.1
+info:
+  title: Translation API
+  description: This API allows 3rd party developers to translate item titles.
+  contact:
+    name: eBay Inc,
+  license:
+    name: eBay API License Agreement
+    url: https://go.developer.ebay.com/api-license-agreement
+  version: v1_beta.1.4
+servers:
+- url: https://api.ebay.com/commerce/translation/v1_beta
+paths:
+  /translate:
+    post:
+      tags:
+      - language
+      description: This method translates listing title and listing description text
+        from one language into another. For a full list of supported language translations,
+        see the table in the API Overview page.
+      operationId: translate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranslateRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateResponse'
+        400:
+          description: Bad Request
+          content: {}
+          x-response-codes:
+            errors:
+              110001:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: From language is invalid, missing or not supported. For
+                  more information, see the API call reference documentation.
+              110002:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: To language is invalid, missing or not supported. For
+                  more information, see the API call reference documentation.
+              110003:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: Context is not supported. For more information, see the
+                  API call reference documentation.
+              110004:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: Maximum number of input text reached. For more information,
+                  see the API call reference documentation.
+              110005:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: Maximum length of input text reached. For more information,
+                  see the API call reference documentation.
+              110006:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: Unsupported from and to combination.
+              110007:
+                domain: API_TRANSLATION
+                category: REQUEST
+                description: Markups are not supported in input texts.
+        500:
+          description: Internal Server Error
+          content: {}
+          x-response-codes:
+            errors:
+              110000:
+                domain: API_TRANSLATION
+                category: APPLICATION
+                description: There was a problem with an eBay internal system or process.
+                  Contact eBay developer support for assistance.
+      security:
+      - ClientCredentials:
+        - https://api.ebay.com/oauth/api_scope
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    TranslateRequest:
+      type: object
+      properties:
+        from:
+          type: string
+          description: The language of the input text to be translated. Not all LanguageEnum
+            values are supported in this field. For a full list of supported language
+            translations, see the table in the API Overview page. For implementation
+            help, refer to <a href='https://developer.ebay.com/api-docs/commerce/translation/types/api:LanguageEnum'>eBay
+            API documentation</a>
+        text:
+          type: array
+          description: 'The input text to translate. For ITEM_DESCRIPTION translations,
+            HTML/CSS markup and links can be included, but will count toward max character
+            limit. Max Length: 1,000 characters for ITEM_TITLE 100,000 characters
+            for ITEM_DESCRIPTION, including markup/tagsMax Occurrence: 1. Only one
+            continuous text string currently supported.'
+          items:
+            type: string
+        to:
+          type: string
+          description: The target language for the translation of the input text.
+            Not all LanguageEnum values are supported in this field. For a full list
+            of supported language translations, see the table in the API Overview
+            page. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/commerce/translation/types/api:LanguageEnum'>eBay
+            API documentation</a>
+        translationContext:
+          type: string
+          description: 'Input the listing entity to be translated. Valid Values: ITEM_TITLE
+            and ITEM_DESCRIPTION For implementation help, refer to <a href=''https://developer.ebay.com/api-docs/commerce/translation/types/api:TranslationContextEnum''>eBay
+            API documentation</a>'
+      description: This is the base type of the <b>translate</b> method request payload.
+    TranslateResponse:
+      type: object
+      properties:
+        from:
+          type: string
+          description: The enumeration value indicates the language of the input text.
+            For implementation help, refer to <a href='https://developer.ebay.com/api-docs/commerce/translation/types/api:LanguageEnum'>eBay
+            API documentation</a>
+        to:
+          type: string
+          description: The enumeration value indicates the language of the translated
+            text. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/commerce/translation/types/api:LanguageEnum'>eBay
+            API documentation</a>
+        translations:
+          type: array
+          description: An array showing the input and translated text. Only one input
+            string can be translated at this time. Support for multiple continuous
+            text strings is expected in the future.
+          items:
+            $ref: '#/components/schemas/Translation'
+      description: This is the base type of the <b>translate</b> method response payload.
+    Translation:
+      type: object
+      properties:
+        originalText:
+          type: string
+          description: The original text, in the language specified in the from field,
+            that was input into the text field in the request.
+        translatedText:
+          type: string
+          description: The translation of the original text into the language specified
+            in the to field.
+      description: This type is used by the <b>translations</b> array, which shows
+        the original text supplied by the user in the request payload, and the text
+        translated by eBay.<br><br>Only one input string can be translated at this
+        time. Support for multiple continuous text strings is expected in the future.
+  securitySchemes:
+    ClientCredentials:
+      type: oauth2
+      description: The security definitions for this API. Please check individual
+        operations for applicable scopes.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ebay.com/identity/v1/oauth2/token
+          scopes:
+            https://api.ebay.com/oauth/api_scope: View public data from eBay
