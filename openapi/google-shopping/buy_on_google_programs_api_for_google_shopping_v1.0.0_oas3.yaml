@@ -1,0 +1,262 @@
+openapi: 3.0.1
+info: 
+  title: Buy On Google Program Status API For Google Shopping 
+  description: Response message for the GetProgramStatus method.
+  contact:
+    name: Buy On Google Programs APi 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/buyongoogleprograms#BuyOnGoogleProgramStatus
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1/
+paths: 
+  /{merchantId}/buyongoogleprograms/{regionCode}/activate:
+    description: Reactivates the BoG program in your Merchant Center account. Moves the program to the active state when allowed, e.g. when paused. Important This method is only whitelisted for selected merchants.
+    post:
+     parameters:
+      - name: merchantId
+        in: path
+        description: 'Required. The ID of the account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: regionCode
+        in: path
+        description: Required. The program region code ISO 3166-1 alpha-2. Currently only US is available.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string        
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Reactivates the BoG program in your Merchant Center account.
+        content:
+          application.json:
+            schema:
+              type: object
+  /{merchantId}/buyongoogleprograms/{regionCode}:
+    description: Retrieves a status of the BoG program for your Merchant Center account.
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: Required. The ID of the account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: regionCode  
+        in: path
+        description: 'Required. The Program region code ISO 3166-1 alpha-2. Currently only US is available.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Retrieves a status of the BoG program for your Merchant Center account. 
+        content:
+          application.json:
+              schema:
+                type: object
+                properties:
+                  kind: 
+                    type: string
+                    items:
+                      $ref: '#/components/schemas/BuyOnGoogleProgramStatus'
+  /{merchantId}/buyongoogleprograms/{regionCode}/onboard:
+    description: "Onboards the BoG program in your Merchant Center account. By using this method, you agree to the Terms of Service. Calling this method is only possible if the authenticated account is the same as the merchant id in the request. Calling this method multiple times will only accept Terms of Service if the latest version is not currently signed. "
+    post:
+     parameters:
+      - name: merchantId
+        in: path
+        description: Required. The ID of the account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: regionCode  
+        in: path
+        description: 'Required. The Program region code ISO 3166-1 alpha-2. Currently only US is available.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              customerServiceEmail:
+                type: string
+                description: The customer service email.
+     security:
+       - OAuth2: [admin]          
+     responses:
+       200:
+        description: Custom Batch  
+        content:
+          application.json:
+            schema:
+              type: object
+  /{merchantId}/buyongoogleprograms/{regionCode}/buyongoogleprograms.patch :
+    description: Updates the status of the BoG program for your Merchant Center account.
+    patch: 
+     parameters:
+      - name: merchantId
+        in: path
+        description: 'Required. The ID of the account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: regionCode  
+        in: path
+        description: 'The ID of the account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+               $ref: '#/components/schemas/BuyOnGoogleProgramStatus' 
+     security:
+      - OAuth2: [admin]      
+     responses:
+       200:
+        description: Updates the status of the BoG program for your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/BuyOnGoogleProgramStatus' 
+  /{merchantId}/buyongoogleprograms/{regionCode}/pause:
+    description: Pauses the BoG program in your Merchant Center account. This method is only available to selected merchants.
+    post: 
+     parameters:
+      - name: merchantId
+        in: path
+        description: 'Required. The ID of the account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: regionCode  
+        in: path
+        description: 'Required. The program region code ISO 3166-1 alpha-2. Currently only US is available.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+      - OAuth2: [admin]      
+     responses:
+       200:
+        description: Pauses the BoG program in your Merchant Center account
+        content:
+          application.json:
+              schema:
+                type: object
+  /{merchantId}/buyongoogleprograms/{regionCode}/requestreview:
+    description: "Requests review and then activates the BoG program in your Merchant Center account for the first time. Moves the program to the REVIEW_PENDING state. This method is only available to selected merchants."
+    post: 
+     parameters:
+      - name: merchantId
+        in: path
+        description: 'Required. The ID of the account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: regionCode
+        in: path
+        description: 'Required. The program region code ISO 3166-1 alpha-2. Currently only US is available.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+      - OAuth2: [admin]                
+     responses:
+       200:
+        description: Creates a Merchant 
+        content:
+          application.json:
+              schema:
+                type: object
+components:
+  schemas:
+      BuyOnGoogleProgramStatus:
+        type: object
+        properties:
+          customerServiceVerifiedEmail:
+            type: string
+            description: Output only. The customer service verified email.
+          customerServicePendingEmail:
+            type: string
+            description: The customer service pending email. After verification this field becomes empty.
+          customerServicePendingPhoneRegionCode:
+            type: string 
+            description: "Two letter country code for the pending phone number, for example CA for Canadian numbers. See the ISO 3166-1 alpha-2 officially assigned codes. In order to update this field the [customerServicePendingPhoneNumber][google.shopping.content.v2p1.Programs.BuyOnGoogleProgramStatus.customer_service_pending_phone_number] must also be set. After verification this field becomes empty."
+          customerServicePendingPhoneNumber:
+            type: string
+            description: "The pending phone number specified for BuyOnGoogle program. It might be different than account level phone number. In order to update this field the [customerServicePendingPhoneRegionCode][google.shopping.content.v2p1.Programs.BuyOnGoogleProgramStatus.customer_service_pending_phone_region_code] must also be set. After verification this field becomes empty."
+          customerServiceVerifiedPhoneRegionCode:
+            type: string 
+            description: "Output only. Two letter country code for the verified phone number, for example CA for Canadian numbers. See the ISO 3166-1 alpha-2 officially assigned codes."
+          customerServiceVerifiedPhoneNumber:
+            type: string 
+            description: "Output only. The verified phone number specified for BuyOnGoogle program. It might be different than account level phone number."
+          participationStage:
+            enum: [PROGRAM_PARTICIPATION_STAGE_UNSPECIFIED, NOT_ELIGIBLE, ELIGIBLE, ONBOARDING, ELIGIBLE_FOR_REVIEW, PENDING_REVIEW, REVIEW_DISAPPROVED, ACTIVE, PAUSED]
+          onlineSalesChannel:
+            enum: [ONLINE_SALES_CHANNEL_UNSPECIFIED, GOOGLE_EXCLUSIVE, GOOGLE_AND_OTHER_WEBSITES]
+          businessModel:
+            type: array
+            items:
+              enum: [BUSINESS_MODEL_UNSPECIFIED, MANUFACTURER, IMPORTER, RESELLER, OTHER]
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
