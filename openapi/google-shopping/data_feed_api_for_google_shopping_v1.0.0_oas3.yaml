@@ -1,0 +1,447 @@
+openapi: 3.0.1
+info: 
+  title: Data Feed API For Google Shopping 
+  description: Datafeed configuration data.
+  contact:
+    name: Data Feed APi 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/datafeeds
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1
+paths: 
+  /datafeeds/batch:
+    description: Deletes, fetches, gets, inserts and updates multiple datafeeds in a single request.
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/DatafeedsCustomBatchRequest'
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Retrieves the status and review eligibility for the free listing program.
+        content:
+          application.json:
+            schema:
+              type: object
+              properties:
+                entries:
+                  type: array
+                  description: The result of the execution of the batch requests.
+                  items:
+                    $ref: '#/components/schemas/DatafeedsCustomBatchResponseEntry'
+                kind:
+                  type: string 
+                  description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeedsCustomBatchResponse'."
+  /{merchantId}/datafeeds/{datafeedId}:
+    description: Deletes a datafeed configuration from your Merchant Center account.
+    delete:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeed. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: datafeedId
+        in: path
+        description: The ID of the datafeed.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string        
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Deletes a datafeed configuration from your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+  /{merchantId}/datafeeds/{datafeedId}/fetchNow:
+    description: Invokes a fetch for the datafeed in your Merchant Center account. If you need to call this method more than once per day, we recommend you use the Products service to update your product data.
+    post:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeed. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: datafeedId
+        in: path
+        description: The ID of the datafeed to be fetched.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string        
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Invokes a fetch for the datafeed in your Merchant Center account. If you need to call this method more than once per day, we recommend you use the Products service to update your product data.
+        content:
+          application.json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string 
+                    description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeedsFetchNowResponse'."
+  /{merchantId}/datafeeds/{datafeedId}/datafeeds.get:
+    description: Retrieves a datafeed configuration from your Merchant Center account.
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeed. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: datafeedId
+        in: path
+        description: The ID of the datafeed.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string        
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Retrieves a datafeed configuration from your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string 
+                    description: "Identifies what kind of resource this is. Value: the fixed string 'content#Datafeed'."
+  /{merchantId}/datafeeds:
+    description: Registers a datafeed configuration with your Merchant Center account.
+    post:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeed. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Datafeed'
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Registers a datafeed configuration with your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+                items: 
+                  $ref: '#/components/schemas/Datafeed'
+  /{merchantId}/datafeeds/datafeeds.list:
+    description: Lists the configurations for datafeeds in your Merchant Center account.
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeeds. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: maxResults
+        in: query
+        description: The maximum number of products to return in the response, used for paging.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: integer 
+      - name: pageToken
+        in: query
+        description: The token returned by the previous request.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string      
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Lists the configurations for datafeeds in your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+                properties:
+                  nextPageToken:
+                    type: string 
+                    description: The token for the retrieval of the next page of datafeeds.
+                  kind:
+                    type: string 
+                    description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeedsListResponse'."
+                  resources:
+                    type: array
+                    description: object (Datafeed)
+                    items:
+                      $ref: '#/components/schemas/Datafeed'
+  /{merchantId}/datafeeds/{datafeedId}/datafeeds.update:
+    description: Updates a datafeed configuration of your Merchant Center account. Any fields that are not provided are deleted from the resource
+    put:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeeds. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: datafeedId
+        in: path
+        description: The ID of the datafeed.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string 
+     security:
+      - OAuth2: [admin]
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Datafeed'
+     responses:
+       200:
+        description: Updates a datafeed configuration of your Merchant Center account. Any fields that are not provided are deleted from the resource
+        content:
+          application.json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Datafeed'
+components:
+  schemas:
+      DatafeedsCustomBatchRequest:
+        type: object
+        properties:
+          entries:
+            type: array
+            description: The request entries to be processed in the batch.
+            items: 
+              $ref: '#/components/schemas/DatafeedsCustomBatchRequestEntry'
+      DatafeedsCustomBatchRequestEntry:
+        type: object
+        properties:
+          batchId:
+            type: string 
+            description: An entry ID, unique within the batch request.
+          merchantId:
+            type: string 
+            description: The ID of the managing account.
+          method:
+            type: string 
+            description: "The method of the batch entry. Acceptable values are: 'delete' 'fetchNow' 'get' 'insert' 'update'"
+          datafeedId:
+            type: string 
+            description: The ID of the data feed to get, delete or fetch.
+          datafeed:
+            type: object
+            description: The data feed to insert.
+            items:
+              $ref: '#/components/schemas/Datafeed'
+      DatafeedsCustomBatchResponseEntry:
+        type: object
+        description: A batch entry encoding a single non-batch datafeeds response.
+        properties:
+          batchId:
+            type: integer
+            description: The ID of the request entry this entry responds to.
+          datafeed:
+            type: object
+            description: The requested data feed. Defined if and only if the request was successful.
+            items: 
+              $ref: '#/components/schemas/Datafeed'
+          errors:
+            type: object
+            description: A list of errors defined if and only if the request failed.
+            items:
+              $ref: '#/components/schemas/Errors'
+      Errors:
+        type: object
+        description: A list of errors returned by a failed batch entry.
+        properties:
+          errors:
+            type: array
+            description: A list of errors.
+            items:
+              $ref: '#/components/schemas/Error'
+          code:
+            type: string 
+            description: The HTTP status of the first error in errors.
+          message:
+            type: string 
+            description: The message of the first error in errors.
+      Error:
+        type: object
+        description: An error returned by the API.
+        properties:
+          domain:
+            type: string 
+            description: The domain of the error.
+          reason:
+            type: string 
+            description: The error code.
+          message:
+            type: string 
+            description: A description of the error.
+      Datafeed:
+        type: object
+        properties:
+          id:
+            type: string 
+            description: Required for update. The ID of the data feed.
+          name:
+            type: string 
+            description: Required for insert. A descriptive name of the data feed.
+          contentType:
+            type: string 
+            description: "Required. The type of data feed. For product inventory feeds, only feeds for local stores, not online stores, are supported. Acceptable values are: 'local products' 'product inventory' 'products'"
+          attributeLanguage:
+            type: string 
+            description: The two-letter ISO 639-1 language in which the attributes are defined in the data feed.
+          kind:
+            type: string 
+            description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeed'"
+          fileName:
+            type: string 
+            description: Required. The filename of the feed. All feeds must have a unique file name.
+          fetchSchedule:
+            type: object 
+            description: Fetch schedule for the feed file.
+            items:
+              $ref: '#/components/schemas/DatafeedFetchSchedule'
+          format:
+            type: object
+            description: Format of the feed file.
+            items:
+              $ref: '#/components/schemas/DatafeedFormat'
+          targets:
+            type: array
+            description: The targets this feed should apply to (country, language, destinations).
+            items:
+              $ref: '#/components/schemas/DatafeedTarget'
+      DatafeedFetchSchedule:
+        type: object
+        description: The required fields vary based on the frequency of fetching. For a monthly fetch schedule, dayOfMonth and hour are required. For a weekly fetch schedule, weekday and hour are required. For a daily fetch schedule, only hour is required.
+        properties:
+          dayOfMonth:
+            type: integer
+            description: The day of the month the feed file should be fetched (1-31).
+          weekday:
+            type: string 
+            description: "The day of the week the feed file should be fetched. Acceptable values are: 'monday' 'tuesday' 'wednesday' 'thursday' 'friday' 'saturday' 'sunday'"
+          hour:
+            type: integer
+            description: The hour of the day the feed file should be fetched (0-23).
+          timeZone:
+            type: string
+            description: "Time zone used for schedule. UTC by default. For example, 'America/Los_Angeles'."
+          fetchUrl:
+            type: string 
+            description: The URL where the feed file can be fetched. Google Merchant Center will support automatic scheduled uploads using the HTTP, HTTPS, FTP, or SFTP protocols, so the value will need to be a valid link using one of those four protocols.
+          username:
+            type: string 
+            description: An optional user name for fetchUrl.
+          password:
+            type: string 
+            description: An optional password for fetchUrl.
+          minuteOfHour:
+            type: integer
+            description: The minute of the hour the feed file should be fetched (0-59). Read-only.
+          paused:
+            type: boolean
+            description: Whether the scheduled fetch is paused or not.
+      DatafeedFormat:
+        type: object
+        properties:
+          fileEncoding:
+            type: string 
+            description: "Character encoding scheme of the data feed. If not specified, the encoding will be auto-detected. Acceptable values are: 'latin-1' 'utf-16be' 'utf-16le' 'utf-8' 'windows-1252'"
+          columnDelimiter:
+            type: string 
+            description: "Delimiter for the separation of values in a delimiter-separated values feed. If not specified, the delimiter will be auto-detected. Ignored for non-DSV data feeds. Acceptable values are: 'pipe' 'tab' 'tilde'"
+          quotingMode:
+            type: string 
+            description: "Specifies how double quotes are interpreted. If not specified, the mode will be auto-detected. Ignored for non-DSV data feeds. Acceptable values are: 'normal character' 'value quoting'"
+      DatafeedTarget:
+        type: object
+        properties:
+          country:
+            type: string 
+            description: The country where the items in the feed will be included in the search index, represented as a CLDR territory code.
+          language:
+            type: string 
+            description: The two-letter ISO 639-1 language of the items in the feed. Must be a valid language for targets[].country.
+          includedDestinations:
+            type: array
+            description: The list of destinations to include for this target (corresponds to checked check boxes in Merchant Center). Default destinations are always included unless provided in excludedDestinations.
+            items:
+              type: string
+          excludedDestinations:
+            type: array
+            description: The list of destinations to exclude for this target (corresponds to cleared check boxes in Merchant Center).
+            items:
+              type: string 
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
