@@ -1,0 +1,292 @@
+openapi: 3.0.1
+info: 
+  title: Data Feed Status API For Google Shopping 
+  description: The status of a datafeed, that is, the result of the last retrieval of the datafeed computed asynchronously when the feed processing is finished.
+  contact:
+    name: Data Feed Status APi 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/datafeedstatuses
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1
+paths: 
+  /datafeedstatuses/batch:
+    description: Gets multiple Merchant Center datafeed statuses in a single request.
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/DatafeedstatusesCustomBatchRequest'   
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Gets multiple Merchant Center datafeed statuses in a single request.
+        content:
+          application.json:
+            schema:
+              type: object
+              properties:
+                entries:
+                  type: array
+                  description: The result of the execution of the batch requests.
+                  items:
+                    $ref: '#/components/schemas/DatafeedstatusesCustomBatchResponseEntry'
+                kind:
+                  type: string 
+                  description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeedstatusesCustomBatchResponse'."
+  /{merchantId}/datafeedstatuses/{datafeedId}:
+    description: Retrieves the status of a datafeed from your Merchant Center account.
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeed. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: datafeedId  
+        in: path
+        description: 'The ID of the datafeed.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: country  
+        in: query
+        description: 'The country for which to get the datafeed status. If this parameter is provided then language must also be provided. Note that this parameter is required for feeds targeting multiple countries and languages, since a feed may have a different status for each target.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: language  
+        in: query
+        description: 'The language for which to get the datafeed status. If this parameter is provided then country must also be provided. Note that this parameter is required for feeds targeting multiple countries and languages, since a feed may have a different status for each target.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Retrieves the status of a datafeed from your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/DatafeedStatus'
+  /{merchantId}/datafeedstatuses:
+    description: Lists the statuses of the datafeeds in your Merchant Center account.
+    post:
+     parameters:
+      - name: merchantId
+        in: path
+        description: The ID of the account that manages the datafeeds. This account cannot be a multi-client account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: maxResults  
+        in: query
+        description: 'The maximum number of products to return in the response, used for paging.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: integer
+      - name: pageToken  
+        in: query
+        description: 'The token returned by the previous request.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string      
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Lists the statuses of the datafeeds in your Merchant Center account.
+        content:
+          application.json:
+              schema:
+                type: object
+                properties:
+                  nextPageToken:
+                    type: string 
+                    description: The token for the retrieval of the next page of datafeed statuses.
+                  kind:
+                    type: string 
+                    description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeedstatusesListResponse'."
+                  resources:
+                    type: array
+                    description: object (DatafeedStatus)
+                    items:
+                      $ref: '#/components/schemas/DatafeedStatus'
+components:
+  schemas:
+      DatafeedstatusesCustomBatchRequest:
+        type: object
+        properties:
+          entries:
+            type: array
+            description: The result of the execution of the batch requests.
+            items:
+              $ref: '#/components/schemas/DatafeedstatusesCustomBatchRequestEntry'
+      DatafeedstatusesCustomBatchRequestEntry:
+        type: object
+        properties:
+          batchId:
+            type:  string 
+            description: An entry ID, unique within the batch request.
+          merchantId:
+            type: string
+            description: The ID of the managing account.
+          method:
+            type: string
+            description: "The method of the batch entry. Acceptable values are: 'get'"
+          datafeedId:
+            type: string 
+            description: The ID of the data feed to get.
+          country:
+            type: string 
+            description: The country for which to get the datafeed status. If this parameter is provided then language must also be provided. Note that for multi-target datafeeds this parameter is required.
+          language:
+            type: string 
+            description: The language for which to get the datafeed status. If this parameter is provided then country must also be provided. Note that for multi-target datafeeds this parameter is required.
+      DatafeedstatusesCustomBatchResponseEntry:
+        type: object
+        properties:
+          batchId:
+            type: integer 
+            description: The ID of the request entry this entry responds to.
+          datafeedStatus:
+            type: object
+            description: The requested data feed status. Defined if and only if the request was successful.
+            items:
+              $ref: '#/components/schemas/DatafeedStatus'
+          errors:
+            type: object
+            description: A list of errors defined if and only if the request failed.
+            items:
+              $ref: '#/components/schemas/Errors'
+      DatafeedStatus:
+        type: object
+        description: The status of a datafeed, that is, the result of the last retrieval of the datafeed computed asynchronously when the feed processing is finished.
+        properties:
+          datafeedId:
+            type: string 
+            description: The ID of the feed for which the status is reported.
+          processingStatus:
+            type: string
+          errors:
+            type: array
+            description: The list of errors occurring in the feed.
+            items:
+              $ref: '#/components/schemas/DatafeedStatusError'
+          warnings:
+            type: array
+            description: The list of errors occurring in the feed.
+            items:
+              $ref: '#/components/schemas/DatafeedStatusError'
+          itemsTotal:
+            type: string 
+            description: The number of items in the feed that were processed.
+          itemsValid:
+            type: string 
+            description: The number of items in the feed that were valid.
+          lastUploadDate:
+            type: string 
+            description: The last date at which the feed was uploaded.
+          country:
+            type: string 
+            description: The country for which the status is reported, represented as a CLDR territory code.
+          language:
+            type: string 
+            description: he two-letter ISO 639-1 language for which the status is reported.
+          kind:
+            type: string 
+            description: "Identifies what kind of resource this is. Value: the fixed string 'content#datafeedStatus'"
+      Errors:
+        type: object
+        properties:
+          errors:
+            type: array
+            description: A list of errors.
+            items:
+              $ref: '#/components/schemas/Error'
+          code:
+            type: integer
+            description: The HTTP status of the first error in errors.
+          message:
+            type: string 
+            description: The message of the first error in errors.
+      Error:
+        type: object
+        properties:
+          domain:
+            type: string 
+            description: The domain of the error.
+          reason:
+            type: string 
+            description: The error code.
+          message:
+            type: string 
+            description: A description of the error.
+      DatafeedStatusError:
+        type: object
+        properties:
+          code:
+            type: string 
+            description: "The code of the error, for example, 'validation/invalid_value'."
+          count:
+            type: string 
+            description: The number of occurrences of the error in the feed.
+          message:
+            type: string 
+            description: The error message, for example, "Invalid price".
+          examples:
+            type: array
+            description: A list of example occurrences of the error, grouped by product.
+            items:
+              $ref: '#/components/schemas/DatafeedStatusExample'
+      DatafeedStatusExample:
+        type: object
+        properties:
+          lineNumber:
+            type: string 
+            description: Line number in the data feed where the example is found.
+          itemId:
+            type: string 
+            description: The ID of the example item.
+          value:
+            type: string 
+            description: The problematic value.
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations

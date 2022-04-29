@@ -1,0 +1,348 @@
+openapi: 3.0.1
+info: 
+  title:  Account Status API For Google Shopping 
+  description: The status of an account, that is, information about its products, which is computed offline and not returned immediately at insertion time.
+  contact:
+    name: Google shopping Account Status API 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/accountstatuses
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1
+paths: 
+  /accountstatuses/batch:
+    description: "Retrieves multiple Merchant Center account statuses in a single request."
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/AccountstatusesCustomBatchRequest'        
+     security:
+        - OAuth2: [admin]  
+     responses:
+       200:
+        description: Retrieves multiple Merchant Center account statuses in a single request.
+        content:
+          application.json:
+            schema:
+              type: object
+              properties:
+                entries:
+                  type: array
+                  description: The result of the execution of the batch requests.
+                  items:
+                      $ref: '#/components/schemas/AccountstatusesCustomBatchResponseEntry'
+                kind:
+                  type: string
+                  description: "Identifies what kind of resource this is. Value: the fixed string 'content#accountstatusesCustomBatchResponse'."
+  /{merchantId}/accountstatuses/{accountId}:
+    description: "Retrieves the status of a Merchant Center account. No itemLevelIssues are returned for multi-client accounts."
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: 'The ID of the managing account. If this parameter is not the same as accountId, then this account must be a multi-client account and accountId must be the ID of a sub-account of this account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: accountId
+        in: path
+        description: 'The ID of the account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: destinations[]
+        in: query
+        description: 'If set, only issues for the specified destinations are returned, otherwise only issues for the Shopping destination.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+        - OAuth2: [admin]          
+     responses:
+       200:
+        description: Retrieves the status of a Merchant Center account. No itemLevelIssues are returned for multi-client accounts.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                  $ref: '#/components/schemas/AccountStatus'
+  /{merchantId}/accountstatuses:
+    description: Lists the statuses of the sub-accounts in your Merchant Center account.
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: 'The ID of the managing account. This must be a multi-client account.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: maxResults
+        in: query
+        description: 'The maximum number of account statuses to return in the response, used for paging.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: integer 
+      - name: pageToken
+        in: query 
+        description: 'The token returned by the previous request.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: destinations[]
+        in: query 
+        description: 'If set, only issues for the specified destinations are returned, otherwise only issues for the Shopping destination.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: name
+        in: query 
+        description: 'If set, only the accounts with the given name (case sensitive) will be returned.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+        - OAuth2: [admin]          
+     responses:
+       200:
+        description: Lists the statuses of the sub-accounts in your Merchant Center account.
+        content:
+          application.json:
+            schema:
+              type: object
+              properties:
+                nextPageToken:
+                  type: string
+                  description: The token for the retrieval of the next page of account statuses.
+                kind:
+                  type: string
+                  description: "Identifies what kind of resource this is. Value: the fixed string 'content#accountstatusesListResponse'."
+                resources[]:
+                  type: array
+                  description: object (AccountStatus)
+                  items:
+                      $ref: '#/components/schemas/AccountStatus'
+components:
+  schemas:
+      AccountstatusesCustomBatchRequest:
+        type: object
+        properties:
+          entries:
+            type: array
+            description: The request entries to be processed in the batch.
+            items:
+              $ref: '#/components/schemas/AccountstatusesCustomBatchRequestEntry'
+      AccountstatusesCustomBatchRequestEntry:
+        type: object 
+        properties:
+          batchId:
+            type: integer 
+            description: An entry ID, unique within the batch request.
+          merchantId:
+            type: string
+            description: The ID of the managing account.
+          method:
+            type: string 
+            description: "The method of the batch entry. Acceptable values are: 'get'."
+          accountId:
+            type: string
+            description: The ID of the (sub-)account whose status to get.
+          destinations:
+            type: array
+            description: If set, only issues for the specified destinations are returned, otherwise only issues for the Shopping destination.
+            items:
+              type: string
+      AccountstatusesCustomBatchResponseEntry:
+        type: object
+        properties:
+          batchId:
+            type: integer
+            description: The ID of the request entry this entry responds to.
+          accountStatus:
+            type: object 
+            description: The requested account status. Defined if and only if the request was successful.
+            items:
+              $ref: '#/components/schemas/AccountStatus'
+          errors:
+            type: object
+            description: A list of errors defined if and only if the request failed.
+            items:
+              $ref: '#/components/schemas/Errors'
+      AccountStatus:
+        type: object
+        properties:
+          accountId:
+            type: string
+            description: The ID of the account for which the status is reported.
+          kind:
+            type: string 
+            description: "Identifies what kind of resource this is. Value: the fixed string 'content#accountStatus'"
+          websiteClaimed:
+            type: string 
+            description: Whether the account's website is claimed or not.
+          accountLevelIssues:
+            type: array
+            description: A list of account level issues.
+            items:
+              $ref: '#/components/schemas/AccountStatusAccountLevelIssue'
+          products:
+            type: array
+            description: accounts.list of product-related data by channel, destination, and country. Data in this field may be delayed by up to 30 minutes.
+            items:
+              $ref: '#/components/schemas/AccountStatusProducts'
+          accountManagement:
+            type: string 
+            description: "How the account is managed. Acceptable values are: 'manual' 'automatic'."
+      Errors:
+        type: object
+        properties:
+          errors:
+            type: array
+            description: A list of errors.
+            items:
+              $ref: '#/components/schemas/Error'
+          code:
+            type: integer
+            description: The HTTP status of the first error in errors.
+          message:
+            type: string
+            description: The message of the first error in errors.
+      Error:
+        type: object
+        properties:
+          domain:
+            type: string 
+            description: The domain of the error.
+          reason:
+            type: string 
+            description: The error code.
+          message:
+            type: string 
+            description: A description of the error.
+      AccountStatusAccountLevelIssue:
+        type: object
+        properties:
+          id:
+            type: string 
+            description: Issue identifier.
+          title:
+            type: string 
+            description: Short description of the issue.
+          country:
+            type: string 
+            description: Country for which this issue is reported.
+          severity:
+            type: string 
+            description: "Severity of the issue. Acceptable values are: 'critical' 'error' 'suggestion'"
+          detail:
+            type: string 
+            description: Additional details about the issue.
+          destination:
+            type: string 
+            description: The destination the issue applies to. If this field is empty then the issue applies to all available destinations.
+          documentation:
+            type: string 
+            description: The URL of a web page to help resolving this issue.
+      AccountStatusProducts:
+        type: object
+        properties:
+          channel:
+            type: string 
+            description: "The channel the data applies to. Acceptable values are: 'local' 'online'"
+          destination:
+            type: string 
+            description: The destination the data applies to.
+          country:
+            type: string 
+            description: The country the data applies to.
+          statistics:
+            type: object
+            description: Aggregated product statistics.
+            items:
+              $ref: '#/components/schemas/AccountStatusStatistics'
+          itemLevelIssues:
+            type: array
+            description: accounts.list of item-level issues.
+            items:
+              $ref: '#/components/schemas/AccountStatusItemLevelIssue'
+      AccountStatusStatistics:
+        type: object
+        properties:
+          active:
+            type: string 
+            description: Number of active offers.
+          pending:
+            type: string 
+            description: Number of pending offers.
+          disapproved:
+            type: string 
+            description: Number of disapproved offers.
+          expiring:
+            type: string 
+            description: Number of expiring offers.
+      AccountStatusItemLevelIssue:
+        type: object
+        properties:
+          code: 
+            type: string 
+            description: The error code of the issue.
+          servability:
+            type: string 
+            description: How this issue affects serving of the offer.
+          resolution:
+            type: string 
+            description: Whether the issue can be resolved by the merchant.
+          attributeName:
+            type: string 
+            description: The attribute's name, if the issue is caused by a single attribute.
+          description:
+            type: string 
+            description: A short issue description in English.
+          detail:
+            type: string 
+            description: A detailed issue description in English.
+          documentation:
+            type: string 
+            description: The URL of a web page to help with resolving this issue.
+          numItems:
+            type: string 
+            description: Number of items with this issue.
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
+              

@@ -1,0 +1,197 @@
+openapi: 3.0.1
+info: 
+  title: Account Label API For Google Shopping 
+  description: Label assigned by CSS domain or CSS group to one of its sub-accounts.
+  contact:
+    name: Google shopping Account Label APi 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/accounts.labels
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1
+paths: 
+  /accounts/{accountId}/labels:
+    description: "Creates a new label, not assigned to any account."
+    post:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The id of the account this label belongs to.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/AccountLabel' 
+     security:
+        - OAuth2: [admin]          
+     responses:
+       200:
+        description: Creates a new label, not assigned to any account.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                  $ref: '#/components/schemas/AccountLabel'
+  /accounts/{accountId}/labels/{labelId}:
+    description: "Deletes a label and removes it from all accounts to which it was assigned."
+    delete:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The id of the account that owns the label.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: labelId
+        in: path
+        description: 'Required. The id of the label to delete.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+        - OAuth2: [admin]        
+     responses:
+       200:
+        description: Deletes a label and removes it from all accounts to which it was assigned.
+        content:
+          application.json:
+            schema:
+              type: object
+  /accounts/{accountId}/labels/accounts.labels.list:
+    description: Lists the labels assigned to an account.
+    get:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The id of the account this label belongs to.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: pageSize
+        in: query
+        description: 'The maximum number of labels to return. The service may return fewer than this value. If unspecified, at most 50 labels will be returned. The maximum value is 1000; values above 1000 will be coerced to 1000.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: integer
+      - name: pageToken
+        in: query
+        description: 'A page token, received from a previous labels.list call. Provide this to retrieve the subsequent page. When paginating, all other parameters provided to labels.list must match the call that provided the page token.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+        - OAuth2: [admin]        
+     responses:
+       200:
+        description: Lists the labels assigned to an account.
+        content:
+          application.json:
+            schema:
+              type: object
+              properties:
+                accountLabels:
+                  type: array
+                  description: The labels from the specified account.
+                  items:
+                      $ref: '#/components/schemas/AccountLabel'
+                nextPageToken:
+                  type: string 
+                  description: A token, which can be sent as pageToken to retrieve the next page. If this field is omitted, there are no subsequent pages.
+  /accounts/{accountId}/labels/{labelId}/accounts.labels.patch:
+    description: "Updates a label."
+    patch:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The id of the account this label belongs to.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: labelId
+        in: path
+        description: 'Required. The id of the label to update.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string          
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/AccountLabel'
+     security:
+        - OAuth2: [admin]           
+     responses:
+       200:
+        description: Updates a label.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/AccountLabel'          
+components:
+  schemas:
+      AccountLabel:
+        type: object
+        properties:
+          labelId:
+            type: string
+            description: Output only. The ID of the label.
+          accountId:
+            type: string
+            description: Immutable. The ID of account this label belongs to.
+          name:
+            type: string
+            description: The display name of this label.
+          description:
+            type: string
+            description: The description of this label.
+          labelType:
+            type: string
+            enum: [LABEL_TYPE_UNSPECIFIED, MANUAL, AUTOMATIC]
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations          
+
+      
+
+  

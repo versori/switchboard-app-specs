@@ -1,0 +1,137 @@
+openapi: 3.0.1
+info: 
+  title: Free Listings Program API For Google Shopping 
+  description: Response message for freelistingsprogram.get.
+  contact:
+    name: Free Listings Program APi 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/freelistingsprogram
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1
+paths: 
+  /{merchantId}/freelistingsprogram:
+    description: Retrieves the status and review eligibility for the free listing program.
+    get:
+     parameters:
+      - name: merchantId
+        in: path
+        description: Required. The ID of the account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Retrieves the status and review eligibility for the free listing program.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                    $ref: '#/components/schemas/FreeListingsProgramStatus'
+  /{merchantId}/freelistingsprogram/requestreview:
+    description: Requests a review of free listings in a specific region. This method is only available to selected merchants.
+    post:
+     parameters:
+      - name: merchantId
+        in: path
+        description: Required. The ID of the account.
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              regionCode:
+                type: string 
+                description: The code ISO 3166-1 alpha-2 of the country for which review is to be requested.
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Requests a review of free listings in a specific region. This method is only available to selected merchants.
+        content:
+          application.json:
+              schema:
+                type: object
+components:
+  schemas:
+      FreeListingsProgramStatus:
+        type: object
+        properties:
+          globalState:
+            type: string 
+            description: State of the program. ENABLED if there are offers for at least one region.
+            enum: [PROGRAM_STATE_UNSPECIFIED, NOT_ENABLED, NO_OFFERS_UPLOADED, ENABLED]
+          regionStatuses:
+            type: array
+            description: Status of the program in each region. Regions with the same status and review eligibility are grouped together in regionCodes.
+            items: 
+              $ref: '#/components/schemas/RegionStatus'
+      RegionStatus:
+        type: object
+        description: Status of program and region.
+        properties:
+          regionCodes:
+            type: array
+            description: The two-letter ISO 3166-1 alpha-2 codes for all the regions with the same eligibilityStatus and reviewEligibility.
+            items: 
+              type: string 
+          eligibilityStatus:
+            type: string 
+            enum: [STATE_UNSPECIFIED, APPROVED, DISAPPROVED, WARNING, UNDER_REVIEW, PENDING_REVIEW, ONBOARDING]
+          reviewIssues:
+            type: array
+            description: Issues evaluated in the review process. Fix all issues before requesting a review.
+            items:
+              type: string 
+          onboardingIssues:
+            type: array
+            description: Issues that must be fixed to be eligible for review.
+            items:
+              type: string 
+          disapprovalDate:
+            type: string 
+            description: "Date by which eligibilityStatus will go from WARNING to DISAPPROVED. Only visible when your eligibilityStatus is WARNING. In ISO 8601 format: YYYY-MM-DD."
+          reviewEligibilityStatus:
+            type: string 
+            description: Review ineligibility reason if account is not eligible for review.
+            enum: [REVIEW_ELIGIBILITY_UNSPECIFIED, ELIGIBLE, INELIGIBLE]
+          reviewIneligibilityReason:
+            type: string 
+            enum: [REVIEW_INELIGIBILITY_REASON_UNSPECIFIED, ONBOARDING_ISSUES, NOT_ENOUGH_OFFERS, IN_COOLDOWN_PERIOD, ALREADY_UNDER_REVIEW, NO_REVIEW_REQUIRED, WILL_BE_REVIEWED_AUTOMATICALLY, IS_RETIRED, ALREADY_REVIEWED]
+          reviewIneligibilityReasonDescription:
+            type: string 
+            description: Reason a program in a specific region isn’t eligible for review. Only visible if reviewEligibilityStatus is INELIGIBLE.
+          reviewIneligibilityReasonDetails:
+            type: object
+            description: Additional information for ineligibility. If reviewIneligibilityReason is IN_COOLDOWN_PERIOD, a timestamp for the end of the cooldown period is provided.
+            items: 
+              $ref: '#/components/schemas/ReviewIneligibilityReasonDetails'
+      ReviewIneligibilityReasonDetails:
+        type: object
+        properties:
+          cooldownTime:
+            type: string 
+            description: This timestamp represents end of cooldown period for review ineligbility reason IN_COOLDOWN_PERIOD.
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations

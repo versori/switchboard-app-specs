@@ -1,0 +1,173 @@
+openapi: 3.0.1
+info: 
+  title:  Account Return Carrier API For Google Shopping 
+  description: This service is designed for merchants enrolled in the Buy on Google program.
+  contact:
+    name: Google shopping Account Return Carrier API 
+    url: https://developers.google.com/shopping-content/reference/rest/v2.1/accounts.returncarrier
+  version: v 1.0.0
+servers: 
+  - url:  https://shoppingcontent.googleapis.com/content/v2.1
+paths: 
+  /accounts/{accountId}/returncarrier:
+    description: "Links return carrier to a merchant account."
+    post:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The Merchant Center Account Id under which the Return Carrier is to be linked.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/AccountReturnCarrier'        
+     security:
+        - OAuth2: [admin] 
+     responses:
+       200:
+        description: Links return carrier to a merchant account.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                  $ref: '#/components/schemas/AccountReturnCarrier'
+  /accounts/{accountId}/returncarrier/{carrierAccountId}:
+    description: "accounts.delete a return carrier in the merchant account."
+    delete:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The Merchant Center Account Id under which the Return Carrier is to be linked.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: carrierAccountId
+        in: path
+        description: 'Required. The Google-provided unique carrier ID, used to update the resource.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string      
+     security:
+        - OAuth2: [admin] 
+     responses:
+       200:
+        description: Accounts.delete a return carrier in the merchant account.
+        content:
+          application.json:
+            schema:
+              type: object
+  /accounts/{accountId}/returncarrier/accounts.returncarrier.list :
+    description: Lists available return carriers in the merchant account.
+    get:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The Merchant Center Account Id under which the Return Carrier is to be linked.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+     security:
+        - OAuth2: [admin]         
+     responses:
+       200:
+        description: Lists available return carriers in the merchant account.
+        content:
+          application.json:
+            schema:
+              type: object
+              properties:
+                accountReturnCarriers:
+                  type: array
+                  description: Accounts.list of all available account return carriers for the merchant.
+                  items:
+                      $ref: '#/components/schemas/AccountReturnCarrier'
+  /accounts/{accountId}/returncarrier/{carrierAccountId}/accounts.returncarrier.patch:
+    description: "Updates a return carrier in the merchant account."
+    patch:
+     parameters:
+      - name: accountId
+        in: path
+        description: 'Required. The Merchant Center Account Id under which the Return Carrier is to be linked.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: carrierAccountId
+        in: path
+        description: 'Required. The Google-provided unique carrier ID, used to update the resource.'
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string          
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/AccountReturnCarrier'        
+     security:
+        - OAuth2: [admin] 
+     responses:
+       200:
+        description: Updates a return carrier in the merchant account.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                  $ref: '#/components/schemas/AccountReturnCarrier'  
+components:
+  schemas:
+      AccountReturnCarrier:
+        type: object
+        properties:
+          carrierAccountId:
+            type: string
+            description: Output only. Immutable. The Google-provided unique carrier ID, used to update the resource.
+          carrierAccountNumber:
+            type: string
+            description: Number of the carrier account.
+          carrierAccountName:
+            type: string
+            description: Name of the carrier account.
+          carrierCode:
+            type: string
+            description: The carrier code enum. Accepts the values FEDEX or UPS.
+            enum: [CARRIER_CODE_UNSPECIFIED, FEDEX, UPS]
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
+      
+
+  
