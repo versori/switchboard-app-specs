@@ -1,0 +1,298 @@
+openapi: 3.0.1
+info: 
+  title: Account API For QuickBooks
+  description: "Accounts are what businesses use to track transactions. Accounts can track money coming in (income or revenue) and going out (expenses). They can also track the value of things (assets), like vehicles and equipment. There are five basic account types: asset, liability, income, expense, and equity. Accounts are part of the chart of accounts, the unique list of accounts each business puts together to do their accounting. Accountants often call accounts ledgers. Learn more about accounts and the chart of accounts. The account object is what you'll use to do actions with the end-users accounts. Note: If you need to delete an account, set the Active attribute to false in an object update request. This makes it inactive. The account itself isn't permanently deleted, but is hidden for display purposes. References to inactive objects remain intact."
+  contact:
+    name: Account APi 
+    url: https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account
+  version: v 1.0.0
+servers: 
+  - url:  https://quickbooks.api.intuit.com
+paths: 
+  /v3/company/<realmID>/account:
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              Name:
+                type: string 
+                description: User recognizable name for the Account. Account.Name attribute must not contain double quotes (") or colon (:).
+              AcctNum: 
+                type: string 
+                description: "User-defined account number to help the user in identifying the account within the chart-of-accounts and in deciding what should be posted to the account. The Account.AcctNum attribute must not contain colon (:). For France locales: Name must be unique. Length must be between 6 and 20 characters Must start with the account number from the master category list. Name limited to alpha-numeric characters. . Required for France locales."
+              TaxCodeRef:
+                type: object 
+                description: Reference to the default tax code used by this account. Tax codes are referenced by the TaxCode.Id in the TaxCode object. Available when endpoint is invoked with the minorversion=3 query parameter. For global locales, only. Required for France locales.
+                properties:
+                  value:
+                    type: string 
+                    description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                  name:
+                    type: string 
+                    description: "An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent."
+              AccountType:
+                type: object 
+                description: A detailed account classification that specifies the use of this account. The type is based on the Classification. Required if AccountSubType is not specified.
+              AccountSubType:
+                type: string 
+                description: "The account sub-type classification and is based on the AccountType value. Required if AccountType is not specified."
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Returns the newly created Account object.
+        content:
+          application.json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Account'
+  /v3/company/<realmID>selectStatement:
+    get:
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Deletes a datafeed configuration from your Merchant Center account.
+        content:
+          text/plain:
+              schema:
+                type: object
+  /v3/company/<realmID>/account/<accountId>:
+    get:
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Returns the Account object.
+        content:
+          application.json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Account'
+  /v3/company/<realmID>/account/update:
+    description: Use this operation to update any of the writable fields of an existing account object. The request body must include all writable fields of the existing object as returned in a read response. Writable fields omitted from the request body are set to NULL. The ID of the object to update is specified in the request body.
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              Id:
+                type: string 
+                description: Unique identifier for this object. Sort order is ASC by default.
+              Name:
+                type: string 
+                description: User recognizable name for the Account. Account.Name attribute must not contain double quotes (") or colon (:).
+              SyncToken: 
+                type: string 
+                description: Version number of the object. It is used to lock an object for use by one app at a time. As soon as an application modifies an object, its SyncToken is incremented. Attempts to modify an object specifying an older SyncToken fails. Only the latest version of the object is maintained by QuickBooks Online.
+              AcctNum:
+                type: string 
+                description: "User-defined account number to help the user in identifying the account within the chart-of-accounts and in deciding what should be posted to the account. The Account.AcctNum attribute must not contain colon (:). Name must be unique. For French Locales: Length must be between 6 and 20 characters Must start with the account number from the master category list. Name limited to alpha-numeric characters. Max length for Account.AcctNum: AU & CA: 20 characters. US, UK & IN: 7 characters"
+              CurrencyRef:
+                type: object
+                description: Reference to the currency in which this account holds amounts.
+                properties:
+                  value:
+                    type: string 
+                    description: A three letter string representing the ISO 4217 code for the currency. For example, USD, AUD, EUR, and so on.
+                  name:
+                    type: string 
+                    description: The full name of the currency.
+              ParentRef:
+                type: object
+                description: Specifies the Parent AccountId if this represents a SubAccount.
+                properties:
+                  value:
+                    type: string 
+                    description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                  name:
+                    type: string 
+                    description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+              Description:
+                type: string 
+                description: User entered description for the account, which may include user entered information to guide bookkeepers/accountants in deciding what journal entries to post to the account.
+              Active:
+                type: string 
+                description: Whether or not active inactive accounts may be hidden from most display purposes and may not be posted to.
+              MetaData:
+                type: object 
+                description: Descriptive information about the object. The MetaData values are set by Data Services and are read only for all applications.
+                properties:
+                  CreateTime:
+                    type: object 
+                    description: Time the entity was created in the source domain.
+                    properties:
+                      dateTime:
+                        type: string
+                        description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+                  LastUpdatedTime:
+                    type: object
+                    description: Time the entity was last updated in the source domain.
+                    properties:
+                      dateTime:
+                        type: string 
+                        description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+              SubAccount:
+                type: boolean
+                description: "Specifies whether this object represents a parent (false) or subaccount (true). Please note that accounts of these types - OpeningBalanceEquity, UndepositedFunds, RetainedEarnings, CashReceiptIncome, CashExpenditureExpense, ExchangeGainOrLoss cannot have a sub account and cannot be a sub account of another account."
+              Classification:
+                type: string 
+                description: "The classification of an account. Not supported for non-posting accounts. Valid values include: Asset, Equity, Expense, Liability, Revenue."
+              FullyQualifiedName:
+                type: string 
+                description: Fully qualified name of the object; derived from Name and ParentRef. The fully qualified name prepends the topmost parent, followed by each subaccount separated by colons and takes the form of Parent:Account1:SubAccount1:SubAccount2. System generated. Limited to 5 levels.
+              TxnLocationType:
+                type: string 
+                description: "The account location. Valid values include: WithinFrance FranceOverseas OutsideFranceWithEU OutsideEU For France locales, only."
+              AccountType:
+                type: string 
+                description: A detailed account classification that specifies the use of this account. The type is based on the Classification.
+              CurrentBalanceWithSubAccounts:
+                type: number
+                description: Specifies the cumulative balance amount for the current Account and all its sub-accounts.
+              AccountAlias: 
+                type: string 
+                description: A user friendly name for the account. It must be unique across all account categories. For France locales, only. For example, if an account is created under category 211 with AccountAlias of Terrains, then the system does not allow creation of an account with same AccountAlias of Terrains for any other category except 211. In other words, 211001 and 215001 accounts cannot have same AccountAlias because both belong to different account category. For France locales, only.
+              TaxCodeRef:
+                type: object 
+                description: Reference to the default tax code used by this account. Tax codes are referenced by the TaxCode.Id in the TaxCode object. Available when endpoint is invoked with the minorversion=3 query parameter. For global locales, only.
+                properties:
+                  value:
+                    type: string 
+                    description: "string The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file."
+                  name:
+                    type: string 
+                    description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+              AccountSubType:
+                type: string 
+                description: The account sub-type classification and is based on the AccountType value.
+              CurrentBalance:
+                type: number
+                description: Specifies the balance amount for the current Account. Valid for Balance Sheet accounts.
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: The account response body.
+        content:
+          application.json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Account'
+components:
+  schemas:
+      Account:
+        type: object
+        properties:
+          Id:
+            type: string
+            description: Unique identifier for this object. Sort order is ASC by default.
+          Name:
+            type: string 
+            description: User recognizable name for the Account. Account.Name attribute must not contain double quotes (") or colon (:).
+          SyncToken:
+            type: string 
+            description: Version number of the object. It is used to lock an object for use by one app at a time. As soon as an application modifies an object, its SyncToken is incremented. Attempts to modify an object specifying an older SyncToken fails. Only the latest version of the object is maintained by QuickBooks Online.
+          AcctNum:
+            type: string 
+            description: "User-defined account number to help the user in identifying the account within the chart-of-accounts and in deciding what should be posted to the account. The Account.AcctNum attribute must not contain colon (:). Name must be unique."
+          CurrencyRef:
+            type: object
+            description: Reference to the currency in which this account holds amounts.
+            properties:
+              value:
+                type: string 
+                description: A three letter string representing the ISO 4217 code for the currency. For example, USD, AUD, EUR, and so on.
+              name:
+                type: string 
+                description: The full name of the currency.
+          ParentRef:
+            type: object 
+            description:  Specifies the Parent AccountId if this represents a SubAccount.
+            properties:
+              value:
+                type: string 
+                description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+              name:
+                type: string 
+                description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+          Description:
+            type: string 
+            description: User entered description for the account, which may include user entered information to guide bookkeepers/accountants in deciding what journal entries to post to the account.
+          Active:
+            type: boolean
+            description: Whether or not active inactive accounts may be hidden from most display purposes and may not be posted to.
+          MetaData:
+            type: object
+            description: Descriptive information about the object. The MetaData values are set by Data Services and are read only for all applications.
+            properties:
+              CreateTime:
+                type: object 
+                description: Time the entity was created in the source domain.
+                properties:
+                  dateTime:
+                    type: string 
+                    description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+              LastUpdatedTime:
+                type: object
+                description: Time the entity was last updated in the source domain.
+                properties:
+                  dateTime: 
+                    type: string 
+                    description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+          SubAccount:
+            type: boolean
+            description: "Specifies whether this object represents a parent (false) or subaccount (true). Please note that accounts of these types - OpeningBalanceEquity, UndepositedFunds, RetainedEarnings, CashReceiptIncome, CashExpenditureExpense, ExchangeGainOrLoss cannot have a sub account and cannot be a sub account of another account."
+          Classification:
+            type: string 
+            description: "The classification of an account. Not supported for non-posting accounts. Valid values include: Asset, Equity, Expense, Liability, Revenue"
+          FullyQualifiedName:
+            type: string 
+            description: Fully qualified name of the object; derived from Name and ParentRef. The fully qualified name prepends the topmost parent, followed by each subaccount separated by colons and takes the form of Parent:Account1:SubAccount1:SubAccount2. System generated. Limited to 5 levels.
+          TxnLocationType:
+            type: string 
+            description: "The account location. Valid values include: WithinFrance FranceOverseas OutsideFranceWithEU OutsideEU For France locales, only."
+          AccountType:
+            type: object
+            description: A detailed account classification that specifies the use of this account. The type is based on the Classification.
+          CurrentBalanceWithSubAccounts:
+            type: number 
+            description: Specifies the cumulative balance amount for the current Account and all its sub-accounts.
+          AccountAlias: 
+            type: string 
+            description: "A user friendly name for the account. It must be unique across all account categories. For France locales, only. For example, if an account is created under category 211 with AccountAlias of Terrains, then the system does not allow creation of an account with same AccountAlias of Terrains for any other category except 211. In other words, 211001 and 215001 accounts cannot have same AccountAlias because both belong to different account category. For France locales, only."
+          TaxCodeRef:
+            type: object 
+            description: Reference to the default tax code used by this account. Tax codes are referenced by the TaxCode.Id in the TaxCode object. Available when endpoint is invoked with the minorversion=3 query parameter. For global locales, only.
+            properties:
+              value:
+                type: string 
+                description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+              name:
+                type: string 
+                description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+          AccountSubType:
+            type: string
+            description: The account sub-type classification and is based on the AccountType value.
+          CurrentBalance:
+            type: number
+            description: Specifies the balance amount for the current Account. Valid for Balance Sheet accounts.
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations

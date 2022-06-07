@@ -1,0 +1,258 @@
+openapi: 3.0.1
+info: 
+  title: APAgingDetail For QuickBooks 
+  description: The information below provides a reference on how to access the AP Aging Detail report from the QuickBooks Online Report Service.
+  contact:
+    name: APAgingDetail APi 
+    url: https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/apagingdetail
+  version: v 1.0.0
+servers: 
+  - url:  https://quickbooks.api.intuit.com
+paths:
+  /v3/company/<realmID>/reports/AgedPayableDetail<name>=<value>[&...]:
+    description: Customize the information returned in the report by specifying query parameters with the query. Listed below are query parameters available for this report.
+    get:
+     parameters:
+      - name: shipvia
+        in: query
+        description: "Filter by the shipping method as stored in Invoice.ShipMethodRef.Name. Supported Values: Any shipping method as sent in the Invoice.ShipMethodRef.Name attribute at Invoice create- or update-time."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: term
+        in: query
+        description: "Filters report contents based on term or terms supplied. Supported Values: One or more comma separated term IDs as returned in the attribute, Term.Id of the Term object response code."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: end_duedate
+        in: query
+        description: "The range of dates over which receivables are due, in the format YYYY-MM-DD. start_duedate must be less than end_duedate. If not specified, all data is returned."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: accounting_method
+        in: query
+        description: "The accounting method used in the report. Supported Values:Cash, Accrual"
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string      
+      - name: start_duedate
+        in: query
+        description: "The range of dates over which receivables are due, in the format YYYY-MM-DD. start_duedate must be less than end_duedate. If not specified, all data is returned.."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: custom1
+        in: query
+        description: "Filter by the specified custom field as defined by the CustomField attribute in transaction entities where supported. Supported Values: Name of custom field.."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: custom2
+        in: query
+        description: "Filter by the specified custom field as defined by the CustomField attribute in transaction entities where supported. Supported Values: Name of custom field."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: custom3
+        in: query
+        description: "Filter by the specified custom field as defined by the CustomField attribute in transaction entities where supported. Supported Values: Name of custom field."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: report_date
+        in: query
+        description: "Start date to use for the report, in the format YYYY-MM-DD."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: num_periods
+        in: query
+        description: "The number of periods to be shown in the report. Supported Values: A numeric value."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: integer
+      - name: vendor
+        in: query
+        description: "Filters report contents to include information for specified vendors. Supported Values: One or more comma separated vendor IDs as returned in the attribute, Vendor.Id, of the Vendor object response code."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string
+      - name: past_due
+        in: query
+        description: "Filters report contents based on minimum days past due. Supported Values: Integer number of days. No filtering.."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: integer
+      - name: aging_period
+        in: query
+        description: "The number of days in the aging period. Supported Values: A numeric value."
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: number
+      - name: columns
+        in: query
+        description: "Column types to be shown in the report. Supported Values: create_by, create_date, doc_num*, due_date*, last_mod_by, last_mod_date, memo*, past_due*, term_name, tx_date*, txn_type*, vend_bill_addr, vend_comp_name, vend_name*, vend_pri_cont, vend_pri_email, vend_pri_tel Additional columns with location tracking enabled: dept_name*"
+        required: true
+        explode: false
+        schema:
+          type: object
+          items:
+            type: string       
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Returns the report object.
+        content:
+          application.json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/APAgingDetail'
+components:
+  schemas:
+      APAgingDetail:
+        type: object
+        properties:
+          Header:
+            type: object
+            description: The report header.
+            properties:
+              Customer:
+                type: string 
+                description: A string containing the Ids as specified with the corresponding filter query parameter. Only those filter query parameters specified in the request are returned in the header.
+              ReportName:
+                type: string 
+                description: Name of the report.
+              Vendor:
+                type: string
+                description: A string containing the Ids as specified with the corresponding filter query parameter. Only those filter query parameters specified in the request are returned in the header.
+              option:
+                type: object
+                description: Container for one or more name/value pairs that return additional information about the report contents.
+                properties:
+                  name: 
+                    type: string
+                    description: "Supported Names: AccountingStandard—Indicates the accounting standard being used for this report. Returned with ProfitAndLoss and BalanceSheet reports, only. NoReportData—Used to signal whether report contains data. If true, report contains no data. If false, report contains data. Returned for every report type."
+                  value:
+                    type: string
+                    description: The value of the parameter, as passed in with the report endpoint URL.
+              Item:
+                type: string 
+                description: A string containing the Ids as specified with the corresponding filter query parameter. Only those filter query parameters specified in the request are returned in the header.
+              Employee:
+                type: string
+                description: A string containing the Ids as specified with the corresponding filter query parameter. Only those filter query parameters specified in the request are returned in the header.
+              ReportBasis:
+                type: string
+                description: Accounting method. Possible values include Cash and Accrual.
+                enum: [Cash, Accrual]
+              StartPeriod:
+                type: string
+                description: The date specified by the start_date query parameter submitted with the request. Format is yyyy-mm-dd.
+              Class:
+                type: string
+                description: A string containing the Ids as specified with the corresponding filter query parameter. Only those filter query parameters specified in the request are returned in the header.
+              Currency:
+                type: string
+                description: A string containing the currency code associated with the report.
+              EndPeriod:
+                type: string
+                description: The date specified by the end_date query parameter submitted with the request. Format is yyyy-mm-dd.
+              Time:
+                type: string
+                description: Date and timestamp of the report.
+              Department:
+                type: string
+                description: A string containing the Ids as specified with the corresponding filter query parameter. Only those filter query parameters specified in the request are returned in the header.
+              SummarizeColumnsBy:
+                type: string
+                description: The method by which report columns are organized. This contains the value specified by the summarize_column_by query parameter submitted with the request.
+                enum: [summarize_column_by]
+          Rows:
+            type: object
+            description: Top level container holding information for report rows.
+            properties:
+              Row [0..n]:
+                type: object
+                description: "Represents a row in a report. A group of rows is enclosed in a Rows container. Rows may be nested either as a single row or in sets, based on the accounts represented in the report and query parameters specified in the request. Parameters: type—As an enclosing section of sub-rows, this is always the string, Section. As a leaf row, this is always the string, Data. group—The group name, valid when type=Section. Possible values include: Income, COGS, GrossProfit, Expenses, NetOperatingIncome, OtherIncome, OtherExpenses, NetOtherIncome, NetIncome"
+                properties:
+                  ColData: 
+                    type: object
+                    description: "Information for each column of a leaf row Row type=Data. There must be a ColData definition for each column defined in the Columns section. Parameters: id—The reference id of the entity as returned in the Id entity field. Returned where applicable. value—The value for column. The type of value is based on the column type. href—The link to the quick zoom data for this cell, available when the report endpoint specifies the qzurl query parameter. The qzurl query parameter is supported on a report by report basis; check the list of query parameters for the specific report to determine support. The value of the parameter is localized."
+                  Summary:
+                    type: object
+                    description: Summary row for a report section. It is the cumulative total amount of money in the account, including the sub accounts.
+                  Rows:
+                    type: object
+                    description: Container for one or more leaf rows.
+                  Header:
+                    type: string 
+                    description: Header row for the report section.
+          Columns:
+            type: object
+            description: "Top level container holding information for report columns or subcolumns."
+            properties:
+              Column [0..n]:
+                type: object
+                description: "Container for an individual report column definition."
+                properties:
+                  ColType:
+                    type: string 
+                    description: "The type of information found in the column. Possible values include: Account—This column in the row represents an account for the row item. The row further defines the specific account. Money—This column in the row represents an amount for the row item."
+                    enum: [Account, Money]
+                  ColTitle: 
+                    type: string 
+                    description: The column label. This string appears at the top of the column. If not defined, the column does not have a label. The value of this attribute is localized.
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
