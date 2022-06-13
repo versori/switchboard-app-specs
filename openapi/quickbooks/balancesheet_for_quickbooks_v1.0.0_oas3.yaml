@@ -241,8 +241,8 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://example.com/oauth/authorize
-          tokenUrl: https://example.com/oauth/token
+          authorizationUrl: https://sandbox-quickbooks.api.intuit.com/oauth/authorize
+          tokenUrl: https://sandbox-quickbooks.api.intuit.com/oauth/token
           scopes:
             read: Grants read access
             write: Grants write access
