@@ -551,9 +551,7 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://sandbox-quickbooks.api.intuit.com/oauth/authorize
-          tokenUrl: https://sandbox-quickbooks.api.intuit.com/oauth/token
+          authorizationUrl: https://appcenter.intuit.com/connect/oauth2
+          tokenUrl: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
           scopes:
-            read: Grants read access
-            write: Grants write access
-            admin: Grants access to admin operations
+            com.intuit.quickbooks.accounting: Grants access to quickbooks accounting scope
