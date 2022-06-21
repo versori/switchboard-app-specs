@@ -1,0 +1,1244 @@
+openapi: 3.0.1
+info: 
+  title: Shipment Service API For DPD 
+  description: ""
+  contact:
+    name: Shipment Service APi  
+    url: https://api.dpd.ro/web-api.html#href-shipment-service
+  version: v 1.0.0
+servers: 
+  - url:  https://api.dpd.ro/v1
+paths:
+  /shipment:
+    description: ""
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string 
+              password:
+                type: string 
+              language:
+                type: string 
+              clientSystemId:
+                type: integer
+              sender:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ShipmentSender'
+              recipient:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ShipmentRecipient'
+              service:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ShipmentService'
+              content:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ShipmentContent'
+              payment:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ShipmentPayment'
+              shipmentNote:
+                type: string
+              ref1:
+                type: string 
+              ref2:
+                type: string 
+              consolidationRef:
+                type: string 
+              requireUnsuccessfulDeliveryStickerImage:
+                type: boolean
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string 
+                  parcels:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CreatedShipmentParcel'
+                  price:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/ShipmentPrice'
+                  pickupDate:
+                    type: string 
+                    format: "Date"
+                  deliveryDeadline:
+                    type: string 
+                    format: "Date_Time"
+                  error:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/Error'
+  /shipment/cancel:
+    description: "Cancel shipment. Shipment can be cancelled, it is not ordered yet."
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              shipmentId:
+                type: string
+              comment:
+                type: string
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: Cancel response is an empty JSON, if the shipment is successfully cancelled. Otherwise, an error is included.
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+  /shipment/add_parcel:
+    description: "Parcels can be added to shipments in pending parcels state (shipments created with pendingParcels flag true)"
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              shipmentId:
+                type: string
+              declaredValueAmount:
+                type: number
+              codAmount:
+                type: number
+              parcel:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ShipmentParcel'
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: Add parcel response returns generated parcel. Otherwise, an error is included.
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  parcel:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/CreatedShipmentParcel'
+                  error:
+                    type: object                  
+  /shipment/finalize:
+    description: "Pending shipments (opended with pendingParcels flag equal to true) should be finalized with this method"
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              shipmentId:
+                type: string
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: The response is the same as CreateShipmentResponse.
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string 
+                  parcels:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CreatedShipmentParcel'
+                  price:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/ShipmentPrice'
+                  pickupDate:
+                    type: string 
+                    format: "Date"
+                  deliveryDeadline:
+                    type: string 
+                    format: "Date_Time"
+                  error:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/Error'
+  /shipment/info:
+    description: "This method provides shipment information"
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              shipmentIds:
+                type: array
+                items:
+                  type: string
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shipment'
+                  error:
+                    type: object
+  /shipment/shipmentId/secondary:
+    description: "This method provides secodary shipments information"
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              types:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrimaryShipment'
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  shipments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SecondaryShipment'
+                  error:
+                    type: object
+  /shipment/update:
+    description: "Full update of already created shipment. Allowed only if shipment is not requested for pick up or is not picked up yet. Currently saved shipment data is cleared and replaced with new shipment data"
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              CreateShipmentRequest:
+                type: object
+                items:
+                  $ref: '#/components/schemas/CreateShipmentRequest'
+              id:
+                type: string
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: Response is CreateShipmentResponse - same returned in createShipment method
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  CreateShipmentResponse:
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/CreateShipmentResponse'
+  /shipment/update/properties:
+    description: "Update shipment properties. All properties can be changed if shipment is not requested for pick up or is not picked up yet. Recipient phone and COD properties can be updated after pickup request if shipment is still not given to courier for delivery and is not cancelled or closed."
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              id:
+                type: string
+              properties:
+                type: object
+                additionalProperties:
+                  type: string
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: Response is UpdateShipmentResponse - same returned in updateShipment method
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  UpdateShipmentResponse :
+                    type: object
+                    items:
+                      $ref: '#/components/schemas/UpdateShipmentResponse'                    
+  /shipment/search:
+    description: "This method returns parcels by reference number."
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              ref:
+                type: string
+              searchInRef:
+                type: integer
+              shipmentsOnly:
+                type: boolean
+              includeReturns:
+                type: boolean
+              fromDateTime:
+                type: integer
+                format: UTC_MILLISEC
+              toDateTime:
+                type: integer
+                format: UTC_MILLISEC
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                  barcodes:
+                    type: array
+                    items:
+                      type: string
+  /shipment/handover:
+    description: "Register handover to courier barcode operations."
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              parcels:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParcelHandover' 
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: Response is empty on success. Otherwise, an error is included.
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+components:
+  schemas:
+      ShipmentSender:
+        type: object
+        properties:
+          clientId:
+            type: integer
+          phone1:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPhoneNumber'
+          phone2:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPhoneNumber'
+          phone3:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPhoneNumber'
+          clientName:
+            type: string 
+          contactName:
+            type: string 
+          email:
+            type: string 
+          privatePerson:
+            type: boolean 
+          address:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentAddress'
+          dropoffOfficeId:
+            type: integer
+      ShipmentRecipient:
+        type: object
+        properties:
+          clientId:
+            type: integer
+          phone1:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPhoneNumber'
+          phone2:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPhoneNumber'
+          phone3:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPhoneNumber'
+          clientName:
+            type: string
+          objectName:
+            type: string 
+          contactName:
+            type: string 
+          email:
+            type: string 
+          privatePerson:
+            type: boolean 
+          address:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentAddress'
+          dropoffOfficeId:
+            type: integer
+      ShipmentService:
+        type: object
+        properties:
+          pickupDate:
+            type: string 
+            format: "Date"
+          autoAdjustPickupDate:
+            type: boolean
+          serviceId:
+            type: integer
+          additionalServices:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentAdditionalServices'
+          deferredDays:
+            type: integer
+          saturdayDelivery:
+            type: boolean 
+      ShipmentContent:
+        type: object
+        properties:
+          parcelsCount:
+            type: integer
+          totalWeight:
+            type: number
+          contents:
+            type: string 
+          package:
+            type: string 
+          documents:
+            type: boolean
+          palletized:
+            type: boolean
+          parcels:
+            type: array
+            items:
+              $ref: '#/components/schemas/ShipmentParcel'
+          pendingParcels:
+            type: boolean
+          exciseGoods:
+            type: boolean
+      ShipmentPayment:
+        type: object
+        properties:
+          courierServicePayer:
+            type: string 
+            enum: ["SENDER", "RECIPIENT", "THIRD_PARTY"]
+          declaredValuePayer:
+            type: string 
+            enum: ["SENDER", "RECIPIENT", "THIRD_PARTY" ]
+          packagePayer:
+            type: string 
+            enum: ["SENDER", "RECIPIENT", "THIRD_PARTY"]
+          thirdPartyClientId:
+            type: integer
+          discountCardId:
+            type: object
+            items:
+               $ref: '#/components/schemas/ShipmentDiscountCardId'
+          senderBankAccount:
+            type: object
+            items:
+              $ref: '#/components/schemas/BankAccount'
+      CreatedShipmentParcel:
+        type: object
+        properties:
+          seqNo:
+            type: integer
+          id:
+            type: string 
+          externalCarrierId:
+            type: integer
+          externalCarrierParcelNumber:
+            type: string
+      ShipmentPrice:
+        type: object
+        properties:
+          amount:
+            type: number
+          vat:
+            type: number
+          total:
+            type: number
+          currency:
+            type: string
+          details:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPriceAmount'
+          amountLocal:
+            type: number
+          vatLocal:
+            type: number
+          totalLocal:
+            type: number
+          currencyLocal:
+            type: string
+          detailsLocal:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPriceAmount'
+          currencyExchangeRateUnit:
+            type: integer
+          currencyExchangeRate:
+            type: number
+          returnAmounts:
+            type: object
+            items:
+              $ref: '#/components/schemas/ReturnAmounts'
+      Error:
+        type: object
+        properties:
+          context:
+            type: string
+          message:
+            type: string
+          id:
+            type: string
+          code:
+            type: integer
+          component:
+            type: string
+      ShipmentPhoneNumber:
+        type: object
+        properties:
+          number:
+            type: string
+          extension:
+            type: string
+      ShipmentAddress:
+        type: object
+        properties:
+          countryId:
+            type: integer
+          stateId:
+            type: string
+          siteId:
+            type: integer
+          siteType:
+            type: string
+          siteName:
+            type: string
+          postCode:
+            type: string
+          streetId:
+            type: integer
+          streetType:
+            type: string
+          streetName:
+            type: string
+          streetNo:
+            type: string
+          complexId:
+            type: integer
+          complexType:
+            type: string
+          complexName:
+            type: string
+          blockNo:
+            type: string
+          entranceNo:
+            type: string
+          floorNo:
+            type: string
+          apartmentNo:
+            type: string
+          poiId:
+            type: integer
+          addressNote:
+            type: string
+          addressLine1:
+            type: string
+          addressLine2:
+            type: string
+          x:
+            type: number
+          y:
+            type: number
+      ShipmentAdditionalServices:
+        type: object
+        properties:
+          cod:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentCODAdditionalService'
+          obpd:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentOBPD'  
+          declaredValue:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentDeclaredValueAdditionalService'
+          fixedTimeDelivery:
+            type: integer
+          returns:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentReturnAdditionalServices'
+          specialDeliveryId:
+            type: integer
+          deliveryToFloor:
+            type: integer
+      ShipmentParcel:
+        type: object
+        properties:
+          id:
+            type: string
+          seqNo:
+            type: integer
+          packageUniqueNumber:
+            type: integer
+          size:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentParcelSize'
+          weight:
+            type: number
+          externalCarrierParcelNumber:
+            type: string
+          ref1:
+            type: string
+          ref2:
+            type: string
+      ShipmentDiscountCardId:
+        type: object
+        properties:
+          contractId:
+            type: integer
+          cardId:
+            type: integer
+      BankAccount:
+        type: object
+        properties:
+          iban:
+            type: string 
+          accountHolder:
+            type: string 
+      ShipmentPriceAmount:
+        type: object
+        properties:
+          amount:
+            type: number
+          percent:
+            type: number
+          vatPercent:
+            type: number
+      ReturnAmounts:
+        type: object
+        properties:
+          moneyTransfer:
+            type: object
+            items:
+              $ref: '#/components/schemas/MoneyTransferPremium'
+      ShipmentCODAdditionalService:
+        type: object
+        properties:
+          amount:
+            type: number
+          currencyCode:
+            type: string
+          payoutToThirdParty:
+            type: boolean
+          payoutToLoggedClient:
+            type: boolean
+          processingType:
+            type: string
+            enum:
+            - CASH
+            - POSTAL_MONEY_TRANSFER
+          includeShippingPrice:
+            type: boolean
+          cardPaymentForbidden:
+            type: boolean
+      ShipmentOBPD:
+        type: object
+        properties:
+          option:
+            type: string
+            enum:
+            - OPEN
+            - TEST
+          returnShipmentServiceId:
+            type: integer
+          returnShipmentPayer:
+            type: string
+            enum: [“SENDER”, “RECIPIENT”, “THIRD_PARTY”]
+      ShipmentDeclaredValueAdditionalService:
+        type: object
+        properties:
+          amount:
+            type: number
+          fragile:
+            type: boolean
+          ignoreIfNotApplicable:
+            type: boolean
+      ShipmentReturnAdditionalServices:
+        type: object
+        properties:
+          rod:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentRODAdditionalService'
+          returnReceipt:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentReturnReceiptAdditionalService'
+          swap:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentSWAPAdditionalService'
+          rop:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentROPAdditionalService'
+          returnVoucher:
+            type: object
+            items:
+                      $ref: '#/components/schemas/ShipmentReturnVoucherAdditionalService'
+      ShipmentRODAdditionalService:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+          comment:
+            type: string
+          returnToClientId:
+            type: integer
+          returnToOfficeId:
+            type: integer
+          thirdPartyPayer:
+            type: boolean
+      ShipmentReturnReceiptAdditionalService:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+          returnToClientId:
+            type: integer
+          returnToOfficeId:
+            type: integer
+          thirdPartyPayer:
+            type: boolean
+      ShipmentSWAPAdditionalService:
+        type: object
+        properties:
+          serviceId:
+            type: integer
+          parcelsCount:
+            type: integer
+          declaredValue:
+            type: number
+          fragile:
+            type: boolean
+          returnToOfficeId:
+            type: integer
+          thirdPartyPayer:
+            type: boolean
+      ShipmentROPAdditionalService:
+        type: object
+        properties:
+          pallets:
+            type: array
+            items:
+              $ref: '#/components/schemas/ShipmentROPAdditionalServiceLine'
+          thirdPartyPayer:
+            type: boolean
+      ShipmentReturnVoucherAdditionalService:
+        type: object
+        properties:
+          serviceId:
+            type: integer
+          payer:
+            type: string
+            enum: ["SENDER", "RECIPIENT", "THIRD_PARTY"]
+          validityPeriod:
+            type: integer
+      ShipmentROPAdditionalServiceLine:
+        type: object
+        properties:
+          serviceId:
+            type: integer
+          parcelsCount:
+            type: integer
+      ShipmentParcelSize:
+        type: object
+        properties:
+          width:
+            type: integer
+          height:
+            type: integer
+          depth:
+            type: integer
+      MoneyTransferPremium:
+        type: object
+        properties:
+          amount:
+            type: number
+          amountLocal:
+            type: number
+          payer:
+            type: string
+            enum: [“SENDER”, “RECIPIENT”, “THIRD_PARTY”]
+      Shipment:
+        type: object
+        properties:
+          id:
+            type: string
+          sender:
+            type: object
+            items:
+              $ref: '#/components/schemas/Sender'
+          recipient:
+            type: object
+            items:
+              $ref: '#/components/schemas/Recipient'
+          service:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentService'
+          content:
+            type: object
+            items:
+              $ref: '#/components/schemas/Content'
+          payment:
+            type: object
+            items:
+              $ref: '#/components/schemas/Payment'
+          shipmentNote:
+            type: string
+          ref1:
+            type: string
+          ref2:
+            type: string
+          price:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPrice'
+          delivery:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentDelivery'
+          primaryShipment:
+            type: object
+            items:
+              $ref: '#/components/schemas/PrimaryShipment'
+          returnShipmentId:
+            type: string
+          redirectShipmentId:
+            type: string
+          pendingShipment:
+            type: boolean
+      Sender:
+        type: object
+        properties:
+          Client:
+            type: object
+            items:
+              $ref: '#/components/schemas/Client'
+          dropoffOfficeId:
+            type: integer
+      Recipient:
+        type: object
+        properties:
+          Client:
+            type: object
+            items:
+              $ref: '#/components/schemas/Client'
+          pickupOfficeId:
+            type: integer
+      Content:
+        type: object
+        properties:
+          parcelsCount:
+            type: integer
+          declaredWeight:
+            type: number
+          measuredWeight:
+            type: number
+          calculationWeight:
+            type: number
+          contents:
+            type: string
+          package:
+            type: string
+          documents:
+            type: boolean
+          palletized:
+            type: boolean
+          parcels:
+            type: array
+            items:
+              $ref: '#/components/schemas/Parcel'
+          pendingParcels:
+            type: boolean
+      Payment:
+        type: object
+        properties:
+          courierServicePayer:
+            type: string 
+            enum: [“SENDER”, “RECIPIENT”, “THIRD_PARTY”]
+          declaredValuePayer:
+            type: string 
+            enum: [“SENDER”, “RECIPIENT”, “THIRD_PARTY”]
+          packagePayer:
+            type: string 
+            enum: [“SENDER”, “RECIPIENT”, “THIRD_PARTY”]
+          thirdPartyClientId:
+            type: integer
+          discountCardId:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentDiscountCardId'
+          codPayment:
+            type: object
+            items:
+              $ref: '#/components/schemas/CODPayment'
+      ShipmentDelivery:
+        type: object
+        properties:
+          deadline:
+            type: string
+            format: DATE_TIME
+          deliveryDateTime:
+            type: string
+            format: DATE_TIME
+          consignee:
+            type: string
+          deliveryNote:
+            type: string
+      PrimaryShipment:
+        type: object
+        properties:
+          id:
+            type: string 
+          type:
+            type: string 
+            enum: [“RETURN_SHIPMENT”, “STORAGE_PAYMENT”, “REDIRECT”, “SEND_BACK”, “MONEY_TRANSFER”, “TRANSPORT_DAMAGED”, “RETURN_VOUCHER”]
+      Client:
+        type: object
+        properties:
+          clientId:
+            type: integer
+          clientName:
+            type: string
+          objectName:
+            type: string
+          contactName:
+            type: string
+          address:
+            type: object
+            items:
+              $ref: '#/components/schemas/Address'
+          email:
+            type: string
+          privatePerson:
+            type: boolean
+      Address:
+        type: object
+        properties:
+          ShipmentAddress:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentAddress'
+          fullAddressString:
+            type: string
+          siteAddressString:
+            type: string
+          localAddressString:
+            type: string
+      Parcel:
+        type: object
+        properties:
+          id:
+            type: string
+          seqNo:
+            type: integer
+          packageUniqueNumber:
+            type: integer
+          declaredSize:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentParcelSize'
+          measuredSize:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentParcelSize'
+          calculationSize:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentParcelSize'
+          declaredWeight:
+            type: number
+          measuredWeight:
+            type: number
+          calculationWeight:
+            type: number
+          externalCarrierParcelNumbers:
+            type: array
+            items:
+              type: string
+          baseType:
+            type: string
+          size:
+            type: string
+      CODPayment:
+        type: object
+        properties:
+          date:
+            type: string 
+            format: "Date_Time"
+          totalPayedOutAmount:
+            type: number
+      SecondaryShipment:
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            type: string
+            enum: [“RETURN_SHIPMENT”, “STORAGE_PAYMENT”, “REDIRECT”, “SEND_BACK”, “MONEY_TRANSFER”, “TRANSPORT_DAMAGED”, “RETURN_VOUCHER”]
+          pickupDate:
+            type: string
+            format: DATE_TIME
+          serviceId:
+            type: integer
+          hasScans:
+            type: boolean
+      CreateShipmentRequest:
+        type: object
+        properties:
+          userName:
+            type: string
+          password:
+            type: string
+          language:
+            type: string
+          clientSystemId:
+            type: integer
+          sender:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentSender'
+          recipient:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentRecipient'
+          service:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentService'
+          content:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentContent'
+          payment:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPayment'
+          shipmentNote:
+            type: string
+          ref1:
+            type: string
+          ref2:
+            type: string
+          consolidationRef:
+            type: string
+          requireUnsuccessfulDeliveryStickerImage:
+            type: boolean
+      CreateShipmentResponse:
+        type: object
+        properties:
+          id:
+            type: string 
+          parcels:
+            type: array
+            items:
+              $ref: '#/components/schemas/CreatedShipmentParcel'
+          price:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentPrice'
+          pickupDate:
+            type: string 
+            format: "DATE"
+          deliveryDeadline:
+            type: string
+            format: "Date_Time"
+          error:
+            type: object
+            items:
+              $ref: '#/components/schemas/Error'
+      UpdateShipmentResponse:
+        type: object
+        properties:
+          CreateShipmentResponse:
+            type: object
+            items:
+              $ref: '#/components/schemas/CreateShipmentResponse'
+      ParcelHandover:
+        type: object
+        properties:
+          dateTime:
+            type: string
+            format: "DATE_TIME"
+          ShipmentParcelRef:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentParcelRef'
+      ShipmentParcelRef:
+        type: object
+        properties:
+          id:
+            type: string
+          externalCarrierParcelNumber:
+            type: string
+  securitySchemes:
+    basicAuth:     # <-- arbitrary name for the security scheme
+      type: http
+      scheme: basic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

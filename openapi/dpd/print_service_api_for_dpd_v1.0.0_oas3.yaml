@@ -1,0 +1,249 @@
+openapi: 3.0.1
+info: 
+  title: Print Service API For DPD 
+  description: ""
+  contact:
+    name: Print Service APi  
+    url: https://api.dpd.ro/web-api.html#href-print-service
+  version: v 1.0.0
+servers: 
+  - url:  https://api.dpd.ro/v1
+paths:
+  /print:
+    description: ""
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              format:
+                type: string
+                enum: [“pdf”, “zpl”]
+              paperSize:
+                type: string
+                enum:
+                - A4
+                - A6
+                - A4_4xA6
+              parcels:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParcelToPrint'
+              printerName:
+                type: string
+              dpi:
+                type: string
+                enum: [“dpi203”, “dpi300”]
+              additionalWaybillSenderCopy:
+                type: string
+                enum:
+                - NONE
+                - ON_SAME_PAGE
+                - ON_SINGLE_PAGE
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+  /print/extended:
+    description: ""
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+                  error:
+                    type: object
+                  printLabelsInfo:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LabelInfo'
+  /print/labelInfo:
+    description: ""
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              parcels:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShipmentParcelRef'
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  printLabelsInfo:
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/LabelInfo'
+                  error:
+                    type: object
+  /print/voucher:
+    description: ""
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              userName:
+                type: string
+              password:
+                type: string
+              language:
+                type: string
+              clientSystemId:
+                type: integer
+              shipmentIds:
+                type: array
+                items:
+                  type: string
+              printerName:
+                type: string
+              format:
+                type: string
+                enum: ["pdf", "zpl"]
+              dpi:
+                type: string
+                enum: [“dpi203”, “dpi300”]
+     security:
+      - basicAuth: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+components:
+  schemas:
+      ParcelToPrint:
+        type: object
+        properties:
+          parcel:
+            type: object
+            items:
+              $ref: '#/components/schemas/ShipmentParcelRef'
+          additionalBarcode:
+            type: object
+            items:
+              $ref: '#/components/schemas/ParcelToPrintAdditionalBarcode'
+      LabelInfo:
+        type: object
+        properties:
+          parcelId:
+            type: string
+          hubId:
+            type: integer
+          officeId:
+            type: integer
+          deadlineDay:
+            type: integer
+          deadlineMonth:
+            type: integer
+          tourId:
+            type: integer
+          fullBarcode:
+            type: string
+          officeName:
+            type: string
+          exportPriority:
+            type: integer
+      ShipmentParcelRef:
+        type: object
+        properties:
+          id:
+            type: string
+          externalCarrierParcelNumber:
+            type: string
+      ParcelToPrintAdditionalBarcode:
+        type: object
+        properties:
+          value:
+            type: string
+          label:
+            type: string
+          format:
+            type: string
+            enum:
+            - CODE128
+            - EAN13
+            - EAN8
+            - UPC-A
+            - UPC-E
+  securitySchemes:
+    basicAuth:     # <-- arbitrary name for the security scheme
+      type: http
+      scheme: basic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
