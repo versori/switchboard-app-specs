@@ -1,0 +1,2708 @@
+openapi: '3.0.0'
+info:
+  title: REST API for Oracle Digital Assistant on Oracle Cloud Infrastructure
+  description: |-
+
+    API for managing an Oracle Digital Assistant instance. You can use this API to:<ul><li>Export insights data</li><li>Export a skill session's conversation log</li><li>Manage the values of dynamic value-list entities</li><li>Manage resource bundles</li><li>List digital assistants and skills</li></ul>
+  version: 2022.01.20
+  x-summary: API for managing an Oracle Digital Assistant instance.
+servers:
+  - url: /api/v1
+    description: Management API Server - External.
+tags:
+  - name: Digital Assistants
+    description: Use this API to get information about digital assistants.
+  - name: Dynamic Entities
+    description: Use this API to manage the values of dynamic value-list entities.
+  - name: Insights Export
+    description: Use this API to create and manage tasks to export insights data. The task can optionally purge the data after it's exported. The exported data is stored in the instance in a downloadable ZIP file.
+  - name: Insights for Skills (Deprecated)
+    description: Deprecated. Use this API to manage jobs to export a skill's insights data that was collected from conversations and to download the data in CSV files.
+  - name: Insights for the Instance (Deprecated)
+    description: Deprecated. Use this API to manage jobs to export a service instance's insights data that was collected from conversations and to download the data in CSV files.
+  - name: Resource Bundles
+    description: Use this API to change the messages and annotations in a skill's resource bundles. You also can add messages for languages other than the default (primary) language.
+  - name: Sessions
+    description: Use this API to retrieve a session's conversation log.
+  - name: Skills
+    description: Use this API to get information about skills.
+paths:
+  /digitalAssistants:
+    get:
+      tags:
+        - Digital Assistants
+      summary: List Digital Assistants
+      description: Returns the list of digital assistants. You can filter the list by name, version, and whether the digital assistant's version is in draft mode or published. You also can filter by base name or by base name and version.
+      operationId: ListDigitalAssistantsDetail
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+        - name: filterType
+          in: query
+          description: Include only the versions that are in the specified state (<code>DRAFT</code> or <code>PUBLISHED</code>).
+          schema:
+            type: string
+            enum:
+              - DRAFT
+              - PUBLISHED
+        - name: name
+          in: query
+          description: Include only the digital assistants with this name.
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: Return only this version. If you include this parameter then you also must include the <code>name</code> parameter.
+          schema:
+            type: string
+        - name: baseName
+          in: query
+          description: Include only extended digital assistants from a base with this name.
+          schema:
+            type: string
+        - name: baseVersion
+          in: query
+          description: Include only extended digital assistants from a base with this version. If you include this parameter then you also must include the <code>baseName</code> parameter.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssistantsPaginatedData'
+      x-internal-id: digitalAssistants-get
+      x-filename-id: digitalassistants-get
+  /bots/{botId}/dynamicEntities/{entityId}/pushRequests:
+    get:
+      tags:
+        - Dynamic Entities
+      summary: List Push Requests
+      description: Returns a list of push requests for the specified entity. You can filter the list based on status.
+      operationId: ListSkillEntityValuesPushRequests
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+        - name: orderBy
+          in: query
+          description: 'Comma-delimited list of properties to sort on, major to minor. You can append <code>:asc</code> or <code>:desc</code> to a property to sort in ascending or descending order. For example: <code>updatedOn:desc,name:asc</code>.  The valid sort properties are <code>entityId</code>, <code>updatedOn</code> and <code>createdOn</code>.'
+          required: false
+          schema:
+            type: string
+        - name: botId
+          in: path
+          description: The ID of the skill or digital assistant that contains the entity.
+          required: true
+          schema:
+            type: string
+        - name: entityId
+          in: path
+          description: Return only the push requests for the entity that has this ID.
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Return only the push requests with a status that contains this string (case-insensitive).
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushRequestPaginatedData'
+        '404':
+          description: The request can't be performed because the specified skill, or entity doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-{entityId}-pushRequests-get
+      x-filename-id: bots-botid-dynamicentities-entityid-pushrequests-get
+    post:
+      tags:
+        - Dynamic Entities
+      summary: Create Push Request
+      description: Creates a push request. After you send this request, call the Push Data to Request operation to provide the entity values to delete, add, and modify.<br/><br/>The request fails if the entity has any push requests that have a status of <code>TRAINING</code>.
+      operationId: CreateSkillEntityValuesPushRequest
+      parameters:
+        - name: botId
+          in: path
+          description: The ID of the skill that contains the entity.
+          required: true
+          schema:
+            type: string
+        - name: entityId
+          in: path
+          description: Create the push request for the entity that has this ID.
+          required: true
+          schema:
+            type: string
+        - name: copy
+          in: query
+          description: To retain the original value set, set this to <code>TRUE</code>. To replace the original value set, set this to <code>FALSE</code>. The default is <code>FALSE</code>.<br/><br/>When you push data to the push request, the service ignores <code>modify</code> and <code>delete</code> objects in the request body if this parameter is set to <code>FALSE</code> or is omitted.
+          schema:
+            type: boolean
+      responses:
+        '201':
+          description: Push Request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicEntityPushRequest'
+        '404':
+          description: Can't create the push request because either the skill or the entity doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        '412':
+          description: Another push request for the entity is in progress.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-{entityId}-pushRequests-post
+      x-filename-id: bots-botid-dynamicentities-entityid-pushrequests-post
+  /bots/{botId}/dynamicEntities/{entityId}/pushRequests/{pushRequestId}:
+    get:
+      tags:
+        - Dynamic Entities
+      summary: Get Push Request
+      description: Returns information about the given push request.
+      operationId: GetSkillEntityValuesPushRequest
+      parameters:
+        - name: botId
+          in: path
+          description: The ID of the skill or digital assistant that contains the entity.
+          required: true
+          schema:
+            type: string
+        - name: entityId
+          in: path
+          description: The ID of the entity that the push request is for.
+          required: true
+          schema:
+            type: string
+        - name: pushRequestId
+          in: path
+          description: The push request's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicEntityPushRequest'
+        '404':
+          description: The request can't be performed because the skill, entity, or push request doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-{entityId}-pushRequests-{pushRequestId}-get
+      x-filename-id: bots-botid-dynamicentities-entityid-pushrequests-pushrequestid-get
+    delete:
+      tags:
+        - Dynamic Entities
+      summary: Delete Push Request
+      description: Deletes the given push request if it doesn't have a status of <code>TRAINING</code>.
+      operationId: DeleteSkillEntityValuesPushRequest
+      parameters:
+        - name: botId
+          in: path
+          description: The ID of the skill that contains the entity.
+          required: true
+          schema:
+            type: string
+        - name: entityId
+          in: path
+          description: The ID of the entity that the push request is for.
+          required: true
+          schema:
+            type: string
+        - name: pushRequestId
+          in: path
+          description: The ID of the push request to delete.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Push request deleted.
+        '404':
+          description: The push request doesn't exist for the skill or entity.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RestError'
+        '412':
+          description: Can't delete the push request because it has a <code>TRAINING</code> status.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-{entityId}-pushRequests-{pushRequestId}-delete
+      x-filename-id: bots-botid-dynamicentities-entityid-pushrequests-pushrequestid-delete
+  /bots/{botId}/dynamicEntities:
+    get:
+      tags:
+        - Dynamic Entities
+      summary: Get Dynamic Entities
+      description: Returns the list of dynamic entities for the given skill. You can use this operation to find a dynamic entity's ID.
+      operationId: ListSkillDynamicEntityDetail
+      parameters:
+        - name: botId
+          in: path
+          description: The skill's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicEntitiesPaginatedData'
+        '404':
+          description: The request can't be performed because the specified skill doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-get
+      x-filename-id: bots-botid-dynamicentities-get
+  /bots/{botId}/dynamicEntities/{entityId}/pushRequests/{pushRequestId}/values:
+    patch:
+      tags:
+        - Dynamic Entities
+      summary: Push Data to Request
+      description: Provides an open push request with the entity values to add, delete, and modify.<br/><br/>You can use this operation to push data to an open (<code>INPROGRESS</code>) push request until you finalize or abort it.
+      operationId: UpdateSkillEntityValuesPushRequest
+      parameters:
+        - name: botId
+          in: path
+          description: The ID of the skill that contains the entity.
+          required: true
+          schema:
+            type: string
+        - name: entityId
+          in: path
+          description: The ID of the entity to update.
+          required: true
+          schema:
+            type: string
+        - name: pushRequestId
+          in: path
+          description: The ID of the push request that will perform the changes that are specified in the request body.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MultiTempEntityValuePatchDTO'
+      responses:
+        '200':
+          description: The data was pushed to the request.
+        '404':
+          description: The request can't be performed because the skill, entity, or push request doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        '412':
+          description: Can't push the data to the request because the request is not <code>INPROGRESS</code>.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-{entityId}-pushRequests-{pushRequestId}-values-patch
+      x-filename-id: bots-botid-dynamicentities-entityid-pushrequests-pushrequestid-values-patch
+  /bots/{botId}/dynamicEntities/{entityId}/pushRequests/{pushRequestId}/{action}:
+    put:
+      tags:
+        - Dynamic Entities
+      summary: Finalize or Abort Push Request
+      description: Use this operation to finalize or abort the push request. <ul><li>Set the <code>{action}</code> to <code>DONE</code> to close an open push request and then start training the entity.</li><li>Set the <code>{action}</code> to <code>ABORT</code> to abort the push request. You can't abort a push request if it is training or it has completed.</li></ul>.
+      operationId: UpdateSkillEntityValuesPushRequest_1
+      parameters:
+        - name: botId
+          in: path
+          description: The ID of the skill that contains the entity.
+          required: true
+          schema:
+            type: string
+        - name: entityId
+          in: path
+          description: The ID of the entity that the push request is for.
+          required: true
+          schema:
+            type: string
+        - name: pushRequestId
+          in: path
+          description: Perform the action on the push request that has this ID.
+          required: true
+          schema:
+            type: string
+        - name: action
+          in: path
+          description: The action to perform.
+          required: true
+          schema:
+            type: string
+            enum:
+              - ABORT
+              - DONE
+      responses:
+        '202':
+          description: Action successfully completed.
+        '404':
+          description: The request can't be performed because the specified skill, entity, or push request doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        '412':
+          description: Can't perform the action because the push request is not <code>INPROGRESS</code>.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-dynamicEntities-{entityId}-pushRequests-{pushRequestId}-{action}-put
+      x-filename-id: bots-botid-dynamicentities-entityid-pushrequests-pushrequestid-action-put
+  /bots/insights/dataExports/{id}:
+    get:
+      tags:
+        - Insights Export
+      summary: Get Export Task Status
+      description: Returns the status and description of the insights export task that has the given job ID.
+      operationId: getStatusForTask
+      parameters:
+        - name: id
+          in: path
+          description: The job ID of the task to get the status for.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagementApiExportJobDetails'
+        '404':
+          description: A task with the given job ID doesn't exist.
+      x-internal-id: bots-insights-dataExports-{id}-get
+      x-filename-id: bots-insights-dataexports-id-get
+    delete:
+      tags:
+        - Insights Export
+      summary: Cancel and delete export task
+      description: Cancels the insights export task that has the given job ID, and then removes all the stored data that's associated with it. You also can use this operation to delete completed tasks.
+      operationId: cancelTask
+      parameters:
+        - name: id
+          in: path
+          description: The job ID of the task to cancel.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+        '404':
+          description: The task with the given ID doesn't exist.
+      x-internal-id: bots-insights-dataExports-{id}-delete
+      x-filename-id: bots-insights-dataexports-id-delete
+  /bots/insights/dataExports:
+    get:
+      tags:
+        - Insights Export
+      summary: List Export Tasks
+      description: Returns a list of insights export tasks along with the status for each task.
+      operationId: getStatusForTasks
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: order
+          in: query
+          description: 'The order in which to sort the results. There are two parts to this query parameter: <i>orderField-direction</i> where <i>orderField</i> is the field to sort on and can be one of:<ul> <li><code>CREATEDBY</code>: Sort on the name of the user that created the export</li> <li><code>STATUS</code>: Sort by export status.</li> <li><code>LASTRUN</code>: Sort on the timestamp of the export</li> <li><code>NAME</code>: Sort by export name</li> </ul> The <i>direction</i> can be either <code>ASC</code> (for ascending) or <code>DESC</code> (for descending). For instance, <code>LASTRUN-DESC</code> sorts by the timestamp of the export in a descending manner.'
+          schema:
+            type: string
+        - name: taskType
+          in: query
+          description: 'Filters by task type. Possible values: EXPORT, SKILL_EXPORT, EXPORT_PURGE,'
+          schema:
+            type: string
+        - name: userFilter
+          in: query
+          description: Filters by username
+          schema:
+            type: string
+        - name: statusFilter
+          in: query
+          description: 'Filters by status.  Possible values: SUCCESS, FAILED, SUBMITTED, IN_PROGRESS, PURGE_SUCCEEDED, PURGE_FAILED, EXPORT_SUCCEEDED, EXPORT_FAILED, NO_DATA.'
+          schema:
+            type: string
+        - name: botId
+          in: query
+          description: Filters by botId.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagementApiExportJobDetails'
+      x-internal-id: bots-insights-dataExports-get
+      x-filename-id: bots-insights-dataexports-get
+    post:
+      tags:
+        - Insights Export
+      summary: Start Export Task
+      description: Creates and starts an asynchronous task to export a digital assistant's or skill's insights data into a ZIP file that's stored in the instance. You can filter which data to export by a digital assistant's ID, a skill's bot name and optional version, or by a bot ID. You also can filter by a date range. You also can use this operation to purge all insights data for a date range. The response includes a jobId, which you can use for the task's ID in other insights export operations.
+      operationId: createTask
+      parameters:
+        - name: since
+          in: query
+          description: 'The start date for the data to export, inclusive. Format: <code>yyyy-mm-dd</code>. Defaults to 1 year before the until date.'
+          schema:
+            type: string
+        - name: until
+          in: query
+          description: 'The end date for the data to export, inclusive. Format: <code>yyyy-mm-dd</code>. Defaults to today.'
+          schema:
+            type: string
+        - name: botName
+          in: query
+          description: The bot name of the skill to export. Note that you can provide a <code>botName</code> or a <code>botId</code> but not both. You can optionally use the <code>botVersion</code> query parameter along with this parameter.
+          schema:
+            type: string
+        - name: botId
+          in: query
+          description: The unique ID that identifies a version of a skill or digital assistant to export.
+          schema:
+            type: string
+        - name: odaId
+          in: query
+          description: The unique ID that identifies a version of a digital assistant to export. The exported file contains data for the digital assistant and its skills. Note that you can filter by digital assistant or by skill but not both.
+          schema:
+            type: string
+        - name: maxFileLength
+          in: query
+          description: The maximum number of lines to add to an exported file before starting a new file.
+          schema:
+            type: string
+            default: '100000000'
+        - name: botVersion
+          in: query
+          description: The bot version of the skill to export. Use this parameter when you specify a <code>botName</code> and you want to retrieve a specific version.
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagementApiExportSpec'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobIdentifier'
+        '400':
+          description: Failed. Details are provided in the response body.
+      x-internal-id: bots-insights-dataExports-post
+      x-filename-id: bots-insights-dataexports-post
+  /bots/insights/dataExports/{id}/files/{filename}:
+    get:
+      tags:
+        - Insights Export
+      summary: Get Export File
+      description: Downloads the specified export ZIP file.
+      operationId: downloadExport
+      parameters:
+        - name: id
+          in: path
+          description: The job ID of the task that produced the export file.
+          required: true
+          schema:
+            type: string
+        - name: filename
+          in: path
+          description: The name of the export file to download. The file names are available from the task's description that's returned by the <code>GET /bots/insights/dataExports/{id}</code> operation.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/zip: {}
+        '400':
+          description: There was an error in the request. The error description is in the body of the response.
+        '404':
+          description: Either the task with the given job ID doesn't exist, or the file doesn't exist.
+      x-internal-id: bots-insights-dataExports-{id}-files-{filename}-get
+      x-filename-id: bots-insights-dataexports-id-files-filename-get
+  /bots/insightDataExport:
+    get:
+      tags:
+        - Insights for the Instance (Deprecated)
+      summary: List Export Tasks
+      description: Returns a list of insights-export tasks for this service instance.
+      operationId: getExportsList
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsDataExportPagingData'
+      deprecated: true
+      x-internal-id: bots-insightDataExport-get
+      x-filename-id: bots-insightdataexport-get
+    post:
+      tags:
+        - Insights for the Instance (Deprecated)
+      summary: Start Export Task
+      description: Creates and starts an asynchronous job to export the  instance's insights data into a ZIP of CSV files. You can filter the  data to export by name, a date range, or both. The response includes a resourceId value, which you can use for the exportId when you call GET /bots/insightDataExport/{exportId}/data to download the exported data.
+      operationId: createExportOrPurge
+      requestBody:
+        description: A description of the data to export.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsightsDataExportInput'
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsExportTaskResponse'
+      deprecated: true
+      x-internal-id: bots-insightDataExport-post
+      x-filename-id: bots-insightdataexport-post
+  /bots/insightDataExport/{exportId}:
+    get:
+      tags:
+        - Insights for the Instance (Deprecated)
+      summary: Get Export Task
+      description: Returns a description of the given instance-level export task.
+      operationId: getExportById
+      parameters:
+        - name: exportId
+          in: path
+          description: The export task's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsDataExportResponse'
+        '404':
+          description: The export task doesn't exist.
+      deprecated: true
+      x-internal-id: bots-insightDataExport-{exportId}-get
+      x-filename-id: bots-insightdataexport-exportid-get
+    delete:
+      tags:
+        - Insights for the Instance (Deprecated)
+      summary: Delete Export Task
+      description: Deletes an instance-level export task.
+      operationId: deleteExport
+      parameters:
+        - name: exportId
+          in: path
+          description: The export task's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successfully deleted.
+        '404':
+          description: The export task doesn't exist.
+      deprecated: true
+      x-internal-id: bots-insightDataExport-{exportId}-delete
+      x-filename-id: bots-insightdataexport-exportid-delete
+  /bots/insightDataExport/{exportId}/data:
+    get:
+      tags:
+        - Insights for the Instance (Deprecated)
+      summary: Get Exported Data
+      description: Returns the instance-level exported data in ZIP format. The ZIP file includes a collection of CSV files, one for each skill bot.
+      operationId: getExportData
+      parameters:
+        - name: exportId
+          in: path
+          description: Export task's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/octet-stream: {}
+        '404':
+          description: The export task doesn't exist.
+      deprecated: true
+      x-internal-id: bots-insightDataExport-{exportId}-data-get
+      x-filename-id: bots-insightdataexport-exportid-data-get
+  /bots/{botId}/insightExports:
+    get:
+      tags:
+        - Insights for Skills (Deprecated)
+      summary: Get Export List
+      description: Returns a list of the skill bot's export tasks.
+      operationId: getExportsList_1
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+        - name: botId
+          in: path
+          description: The ID of the skill bot.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsExportPagingData'
+        '404':
+          description: The skill doesn't exist or insights aren't enabled for the skill.
+      deprecated: true
+      x-internal-id: bots-{botId}-insightExports-get
+      x-filename-id: bots-botid-insightexports-get
+    post:
+      tags:
+        - Insights for Skills (Deprecated)
+      summary: Start Export Task
+      description: Creates and starts an asynchronous job to export the skill's insights data into a CSV file. You can filter the data to export by name, a date range, or both. The response includes a <code>resourceId</code> value, which you use for the <code>exportId</code>. After you start the task, use the Get Export Task Status operation to monitor the job status. After the status changes to <code>Completed</code>, you can call the Get Exported Data operation.
+      operationId: createExport
+      parameters:
+        - name: botId
+          in: path
+          description: The ID of the skill bot.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Description of what data to export.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsightsExportInput'
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsExportTaskResponse'
+        '404':
+          description: The skill doesn't exist or insights aren't enabled for the skill.
+      deprecated: true
+      x-internal-id: bots-{botId}-insightExports-post
+      x-filename-id: bots-botid-insightexports-post
+  /bots/{botId}/insightExports/{exportId}:
+    get:
+      tags:
+        - Insights for Skills (Deprecated)
+      summary: Get Export Task
+      description: Returns information about the skill-level export task.
+      operationId: getExportById_1
+      parameters:
+        - name: exportId
+          in: path
+          description: The export task's ID. This is the same as the task's <code>resourceId</code>.
+          required: true
+          schema:
+            type: string
+        - name: botId
+          in: path
+          description: The ID of the skill bot.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsExportOutput'
+        '404':
+          description: The skill or export task doesn't exist or insights aren't enabled for the skill.
+      deprecated: true
+      x-internal-id: bots-{botId}-insightExports-{exportId}-get
+      x-filename-id: bots-botid-insightexports-exportid-get
+    delete:
+      tags:
+        - Insights for Skills (Deprecated)
+      summary: Delete Export Task
+      description: Deletes the skill-level export task.
+      operationId: deleteExport_1
+      parameters:
+        - name: exportId
+          in: path
+          description: The export task's ID.
+          required: true
+          schema:
+            type: string
+        - name: botId
+          in: path
+          description: The ID of the skill bot.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successfully deleted.
+        '404':
+          description: The export task doesn't exist.
+      deprecated: true
+      x-internal-id: bots-{botId}-insightExports-{exportId}-delete
+      x-filename-id: bots-botid-insightexports-exportid-delete
+  /bots/{botId}/insightExports/{exportId}/data:
+    get:
+      tags:
+        - Insights for Skills (Deprecated)
+      summary: Get Exported Data
+      description: Returns the skill's exported data in a ZIP that contains a CSV file.
+      operationId: getExportData_1
+      parameters:
+        - name: exportId
+          in: path
+          description: Export task's ID.
+          required: true
+          schema:
+            type: string
+        - name: botId
+          in: path
+          description: The ID of the skill bot.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/octet-stream: {}
+        '404':
+          description: The export task doesn't exist.
+      deprecated: true
+      x-internal-id: bots-{botId}-insightExports-{exportId}-data-get
+      x-filename-id: bots-botid-insightexports-exportid-data-get
+  /bots/{botId}/insightExports/{exportId}/status:
+    get:
+      tags:
+        - Insights for Skills (Deprecated)
+      summary: Get Export Task Status
+      description: Returns the status of a skill-level export task.
+      operationId: getExportStatus
+      parameters:
+        - name: exportId
+          in: path
+          description: Export task's ID.
+          required: true
+          schema:
+            type: string
+        - name: botId
+          in: path
+          description: The ID of the skill bot.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsExportStatusResponse'
+        '404':
+          description: The export task doesn't exist.
+      deprecated: true
+      x-internal-id: bots-{botId}-insightExports-{exportId}-status-get
+      x-filename-id: bots-botid-insightexports-exportid-status-get
+  /bots/{botId}/bundles:
+    get:
+      tags:
+        - Resource Bundles
+      summary: List Messages
+      description: Returns a list of the messages from all the skill's resource bundles, where each object in the response array represents a message for a specific language for a given <code>key</code>.
+      operationId: ListMessages
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+        - name: filterBy
+          in: query
+          description: The type of messages to retrieve. To get all messages, omit this parameter. Accepted values are <code>intent</code>, <code>qna</code>, <code>configuration</code> and <code>user</code>.
+          schema:
+            type: string
+        - name: botId
+          in: path
+          description: The skill's ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBundleEntries'
+        '400':
+          description: The filterBy query parameter value is not supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        '404':
+          description: A skill with the specified <code>botId</code> does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-bundles-get
+      x-filename-id: bots-botid-bundles-get
+    post:
+      tags:
+        - Resource Bundles
+      summary: Add Messages
+      description: If you have a multi-language skill, you can use this method to add messages in other languages to an existing resource bundle entry. A resource bundle entry is a set of messages (strings) for a given <code>key</code> where each message contains the text for a different language (<code>languageTag</code>).</br></br>All bundle entries contain a message for the <code>default</code> language, and you use this method to add the translations for other languages. Say, for example, the default language is Spanish, and there is a message with the <code>key</code> "Hello_Message" and the <code>languageTag</code> "default". You can use this method to add a French version of the message with the <code>key</code> "Hello_Message" and the <code>languageTag</code> "fr".</br></br>If any objects in the request body are malformed, if a resource bundle entry doesn't exist for a specified <code>key</code>, or any object references a language that already exists for the <code>key</code>, then no changes are made, and the response status is either 400 (non-existing key) or 409 (duplicate). If the request body has some objects with non-existing keys and some objects with duplicate key/language combinations, then the response status is 409 and the response body contains only the objects with duplicate key/language combinations. If there were any objects with non-existing keys, the response body will not report these.</br></br>You can't use this method add keys or to modify existing messages or annotations. You also can't use this method to modify bundles in skills that you've pulled from the store.
+      operationId: AddMessages
+      parameters:
+        - name: botId
+          in: path
+          description: The skill's ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The messages to add for languages other than the default language.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/importEntries'
+      responses:
+        '200':
+          description: Array of all the messages that were added to the resource bundle.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BundleEntries'
+        '400':
+          description: Either the request body is malformed or one or more objects reference a <code>key</code> that doesn't exist in the skill's resource bundles. You can't use this method to add keys.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageBundleEntryErrorForm'
+        '404':
+          description: A skill with the specified <code>botId</code> does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+        '409':
+          description: Array of all existing resource bundle messages with <code>key</code> and <code>languageTag</code> pairs that match objects in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageBundleEntryErrorForm'
+      x-internal-id: bots-{botId}-bundles-post
+      x-filename-id: bots-botid-bundles-post
+    patch:
+      tags:
+        - Resource Bundles
+      summary: Change Messages
+      description: Changes messages or associated annotations (or both) in the skill's resource bundles. A message is identified by a <code>key</code> and a <code>languageTag</code>.</br></br>If any object in the request body is malformed, or if any object in the request body references a message that doesn't exist, then no changes are made. You can't add keys to the bundle, and you can't update skills that you've pulled from the store.
+      operationId: ChangeMessages
+      parameters:
+        - name: botId
+          in: path
+          description: The skill's ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The messages or annotations (or both) to change.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/importEntries'
+      responses:
+        '200':
+          description: Array of the messages that were changed in the resource bundle.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BundleEntries'
+        '400':
+          description: Either the request body is malformed or one or more objects reference a <code>key</code> and <code>languageTag</code> pair that doesn't exist in the skill's resource bundles. Note that you can't use this method to add messages. You only can update existing ones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageBundleEntryErrorForm'
+        '404':
+          description: A skill with the specified <code>botId</code> does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestError'
+      x-internal-id: bots-{botId}-bundles-patch
+      x-filename-id: bots-botid-bundles-patch
+  /bots/sessions/{channelId}/{userId}/{sessionId}/log:
+    get:
+      tags:
+        - Sessions
+      summary: Get Conversation Log
+      description: Returns the conversation log for the given session ID.
+      operationId: getSessionConversationLog
+      parameters:
+        - name: sessionId
+          in: path
+          description: The channel session ID for the conversation. From custom component code, you can get the session ID by calling <code>conversation.sessionId()</code>.
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: path
+          description: 'The channel user ID for the conversation. '
+          required: true
+          schema:
+            type: string
+        - name: channelId
+          in: path
+          description: The channel ID for the conversation.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionInteractions'
+        '404':
+          description: The given session ID, user ID, and channel ID combination is invalid or Enable Insights is switched to Off in the skill.
+      x-internal-id: bots-sessions-{channelId}-{userId}-{sessionId}-log-get
+      x-filename-id: bots-sessions-channelid-userid-sessionid-log-get
+  /skills:
+    get:
+      tags:
+        - Skills
+      summary: List Skills
+      description: Returns the list of skills. You can filter the list by name, version, and whether the skill is in draft mode or published. You also can filter by base name or by base name and version.
+      operationId: ListSkillsDetail
+      parameters:
+        - $ref: '#/components/parameters/pagingOffset'
+        - $ref: '#/components/parameters/pagingLimit'
+        - $ref: '#/components/parameters/pagingTotalResults'
+        - name: filterType
+          in: query
+          description: Include only the versions that are in the specified state (<code>DRAFT</code> or <code>PUBLISHED</code>).
+          schema:
+            type: string
+            enum:
+              - DRAFT
+              - PUBLISHED
+        - name: name
+          in: query
+          description: Include only the skills with this name.
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: Return only this version. If you include this parameter then you also must include the <code>name</code> parameter.
+          schema:
+            type: string
+        - name: baseName
+          in: query
+          description: Include only extended skills from a base with this name.
+          schema:
+            type: string
+        - name: baseVersion
+          in: query
+          description: Include only extended skills from a base with this version. If you include this parameter then you also must include the <code>baseName</code> parameter.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillsPaginatedData'
+      x-internal-id: skills-get
+      x-filename-id: skills-get
+components:
+  schemas:
+    BotDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Skill or digital assistant ID.
+        name:
+          type: string
+          description: Skill or digital assistant name.
+        version:
+          type: string
+          description: Skill or digital assistant version.
+        status:
+          type: string
+          description: Skill or digital assistant status.
+          enum:
+            - DRAFT
+            - PUBLISHED
+        platformVersion:
+          type: string
+          description: Skill or digital assistant platform version.
+        createdOn:
+          type: string
+          description: Skill or digital assistant creation date.
+          format: date-time
+        fromSkillStore:
+          type: boolean
+          description: Indicates if the bot was installed from the skill store.
+        baseBot:
+          $ref: '#/components/schemas/BotDetail'
+        multilingualMode:
+          type: string
+          description: Skill or digital assistant multilingual mode.
+        primaryLanguageTag:
+          type: string
+          description: Multilingual skill or digital assistant primary language tag.
+        nativeLanguageTags:
+          type: array
+          description: Native multilingual skill or digital assistant supported language tags.
+          items:
+            type: string
+            description: Native multilingual skill or digital assistant supported language tags.
+      description: Skill or digital assistant details.
+    DigitalAssistantsPaginatedData:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/BotDetail'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+      description: List of digital assistants.
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+          description: The relationship with the resource
+        href:
+          type: string
+          description: URL to the resource
+    Links:
+      type: array
+      properties:
+        selfLinks:
+          type: object
+          properties:
+            baseUri:
+              type: string
+              format: uri
+            absolutePathBuilder:
+              type: object
+            requestUri:
+              type: string
+              format: uri
+            requestUriBuilder:
+              type: object
+            baseUriBuilder:
+              type: object
+            pathParameters:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+            queryParameters:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+            matchedURIs:
+              type: array
+              items:
+                type: string
+            matchedResources:
+              type: array
+              items:
+                type: object
+            pathSegments:
+              type: array
+              items:
+                type: object
+                properties:
+                  matrixParameters:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                  path:
+                    type: string
+            absolutePath:
+              type: string
+              format: uri
+            path:
+              type: string
+          writeOnly: true
+        empty:
+          type: boolean
+      items:
+        $ref: '#/components/schemas/Link'
+    DynamicEntityPushRequest:
+      type: object
+      properties:
+        createdOn:
+          type: string
+          description: The date and time, in ISO 8601 format, that the resource was created (for example, <code>2018-10-17T06:50:34.045Z</code>).
+          format: date-time
+          readOnly: true
+        updatedOn:
+          type: string
+          description: The date and time, in ISO 8601 format, that the resource was last modified (for example, <code>2018-10-17T06:50:34.045Z</code>).
+          format: date-time
+          readOnly: true
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          description: An array of links to the resource.
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/Link'
+        id:
+          type: string
+          description: The resource's unique ID.
+          readOnly: true
+        status:
+          type: string
+          description: The status of the push request.
+          readOnly: true
+          enum:
+            - INPROGRESS
+            - TRAINING
+            - COMPLETED
+            - ABORTED
+            - TERMINATED_BY_ERROR
+        statusMessage:
+          type: string
+          description: The message associated with the push request.
+          readOnly: true
+      description: Push-request metadata.
+    Location:
+      type: object
+      properties:
+        source:
+          type: string
+        o:lineNo:
+          type: integer
+          format: int32
+        o:colNo:
+          type: integer
+          format: int32
+    RestError:
+      type: object
+      properties:
+        type:
+          type: string
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        detail:
+          type: string
+        instance:
+          type: string
+        o:ecid:
+          type: string
+        o:opcRequestId:
+          type: string
+        o:errorCode:
+          type: string
+        o:errorPath:
+          type: string
+        o:errorDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestError'
+        o:location:
+          $ref: '#/components/schemas/Location'
+    DynamicEntitiesPaginatedData:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/NamedEntityDetail'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+      description: List of a skill's dynamic entities.
+    NamedEntityDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity ID.
+        name:
+          type: string
+          description: Entity name.
+        type:
+          type: string
+          description: Entity type.
+      description: Entity details.
+    PushRequestPaginatedData:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/DynamicEntityPushRequest'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+    DynamicEntityPushTempEntityValue:
+      required:
+        - canonicalName
+      type: object
+      properties:
+        createdOn:
+          type: string
+          description: The date and time, in ISO 8601 format, that the resource was created (for example, <code>2018-10-17T06:50:34.045Z</code>).
+          format: date-time
+          readOnly: true
+        updatedOn:
+          type: string
+          description: The date and time, in ISO 8601 format, that the resource was last modified (for example, <code>2018-10-17T06:50:34.045Z</code>).
+          format: date-time
+          readOnly: true
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          description: An array of links to the resource.
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/Link'
+        id:
+          type: string
+          description: The resource's unique ID.
+          readOnly: true
+        canonicalName:
+          type: string
+          description: The entity value.
+        synonyms:
+          type: array
+          description: Synonyms for the entity value.
+          items:
+            type: string
+            description: Synonyms for the entity value.
+        primaryLanguageCanonicalName:
+          type: string
+          description: The entity value (<code>canonicalName</code>) for the primary language. This property is required for secondary-language entity values for native multi-language skills. If you include it for a primary-language entity value, then it must be equal to the <code>canonicalName</code> value. The property must not be included for skills that aren't native multi-language.
+        nativeLanguageTag:
+          type: string
+          description: The native language tag to use for the entity value. The tag must identify one of the languages that the skill supports. This property is required for native multi-language skills, even for entries for the primary language. This property is not valid for skills that aren't native multi-language.
+      description: The entity value and its synonyms.
+    MultiTempEntityValuePatchDTO:
+      type: object
+      properties:
+        delete:
+          type: array
+          description: The entity values to delete. The service ignores this object if the <code>copy</code> query parameter for the push request was omitted or set to <code>FALSE</code>.
+          items:
+            $ref: '#/components/schemas/DynamicEntityPushTempEntityValue'
+        add:
+          type: array
+          description: The entity values to add.
+          items:
+            $ref: '#/components/schemas/DynamicEntityPushTempEntityValue'
+        modify:
+          type: array
+          description: The entity values to modify. The service ignores this object if the <code>copy</code> query parameter for the push request was omitted or set to <code>FALSE</code>.
+          items:
+            $ref: '#/components/schemas/DynamicEntityPushTempEntityValue'
+      description: The data to add, delete, and modify.
+    JobIdentifier:
+      type: object
+      properties:
+        jobId:
+          type: string
+          description: The unique ID of the task.
+    ManagementApiExportSpec:
+      required:
+        - taskType
+      type: object
+      properties:
+        name:
+          type: string
+          description: A user-specified name for the task. If not specified, then a name is generated.
+        taskType:
+          type: string
+          description: 'The type of task to start.<ul><li><code>EXPORT</code>: Use this to start an export .</li><li><code>EXPORT_PURGE</code>: Use this to start an export that will also purge data. You can''t use this type with the botName, botId, or odaId query parameter.</li></ul>'
+          enum:
+            - EXPORT
+            - EXPORT_PURGE
+        insightsDataExport:
+          type: boolean
+          description: |-
+            <p>A boolean flag that indicates how much data to include in the export. Set to <code>true</code> to include just the essential data, and <code>false</code> to include all data.<p>
+            <p>You can see a description of the output when the property is set to <code>true</code> at <a href="http://www.oracle.com/pls/topic/lookup?ctx=en/cloud/paas/digital-assistant&id=DACUA-GUID-DA624B83-6341-4B57-9145-8D9635D3376A" target="_blank">Export Log Fields</a> in <i>Using Oracle Digital Assistant</i>.</p>
+            <p>When <code>false</code> the <code>dialog_context</code> is base64 encoded.</p>
+          default: false
+      description: Describes an insights export task.
+    ManagementApiExportJobDetails:
+      type: object
+      properties:
+        filenames:
+          type: array
+          description: A list of the files holding the exported data.
+          items:
+            type: string
+            description: A list of the files holding the exported data.
+        name:
+          type: string
+          description: The name that was provided when the task was created. If a name wasn't provided then it's a generated name.
+        createdBy:
+          type: string
+          description: The user who created the task.
+        beginDate:
+          type: string
+          description: 'Begin date of the data included in the task. Format: <code>dd-mm-yyyy</code>.'
+          format: date-time
+        endDate:
+          type: string
+          description: 'End date of the data included in the task. Format: <code>dd-mm-yyyy</code>.'
+          format: date-time
+        jobType:
+          type: string
+          description: 'The type of Task.<ul><li><code>EXPORT</code>: A task to export the data.</li><li><code>EXPORT_PURGE</code>: A task to both export and purge data.</li></ul>'
+          enum:
+            - EXPORT
+            - EXPORT_PURGE
+        jobId:
+          type: string
+          description: The unique ID of the task.
+        status:
+          type: string
+          description: 'The status of the task.<ul><li><code>SUBMITTED</code>: The task was submitted.</li><li><code>IN_PROGRESS</code>: The task was is running, but has not completed yet.</li><li><code>PURGE_SUCCEEDED</code>: The export and purge were successful.</li><li><code>PURGE_FAILED</code>: The purge failed.  Since purge only runs after export, this means the export succeeded.</li><li><code>EXPORT_SUCCEEDED</code>: The export completed successfully.</li><li><code>EXPORT_FAILED</code>: The export failed.</li><li><code>SUCCESS</code>: This is the status for a successful delete.</li><li><code>FAILED</code>: The task failed due to an unexpected error.</li><li><code>NO_DATA</code>: There was no data to export. This can occur if  the filters that you specified for an export resulted in no data being  returned.</li></ul>'
+          enum:
+            - SUCCESS
+            - FAILED
+            - SUBMITTED
+            - IN_PROGRESS
+            - PURGE_SUCCEEDED
+            - PURGE_FAILED
+            - EXPORT_SUCCEEDED
+            - EXPORT_FAILED
+            - NO_DATA
+        error:
+          type: string
+          description: The error message.
+        jobTimestamp:
+          type: string
+          description: The time the task started.
+    InsightsExportTaskResponse:
+      type: object
+      properties:
+        jobName:
+          type: string
+          description: The name of the export job as specified in the create request.
+        resourceId:
+          type: string
+          description: The export task's ID.
+    InsightsDataExportInput:
+      required:
+        - beginDate
+        - createdByName
+        - endDate
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Use <code>EXPORT</code> to export and retain the data and use <code>EXPORT_AND_PURGE</code> to export the data and then delete it.
+          enum:
+            - EXPORT
+            - EXPORT_AND_PURGE
+        name:
+          type: string
+          description: Name for the export task.  The name must begin with a letter and it can contain only letters, numbers, and underscores.
+          example: FebInstanceExport
+        beginDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range start date.
+          format: date
+        endDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range end date.
+          format: date
+        createdByName:
+          type: string
+          description: A name that identifies who created the export task.
+    InsightsDataExportResponse:
+      required:
+        - createdByName
+      type: object
+      properties:
+        createdByName:
+          type: string
+          description: A name that identifies who created the export task.
+          readOnly: true
+        status:
+          type: string
+          description: 'The current status of the export.<ul><li><code>SUBMITTED</code>: The export was submitted.</li><li><code>IN_PROGRESS</code>: The export is in progress.</li><li><code>PURGE_SUCCEEDED</code>: The purge completed successfully.</li><li><code>PURGE_FAILED</code>: The purge failed. The <code>error</code> property provides more information.</li><li><code>EXPORT_SUCCEEDED</code>: The export completed successfully.</li><li><code>EXPORT_FAILED</code>: The export failed. The <code>error</code> property provides more information.</li><li><code>NO_DATA</code>: There wasn''t any data to export or purge. Try a different date range or filter.</li></ul>'
+          enum:
+            - PURGE_SUCCEEDED
+            - PURGE_FAILED
+            - EXPORT_SUCCEEDED
+            - EXPORT_FAILED
+            - NO_DATA
+            - SUBMITTED
+            - IN_PROGRESS
+        jobName:
+          type: string
+          description: The name of the export job as specified in the create request.
+        resourceId:
+          type: string
+          description: The export task's id.
+        beginDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range start date.
+          format: date
+        endDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range end date.
+          format: date
+        jobTimestamp:
+          type: string
+          description: Timestamp of when the job started.
+          format: date
+      description: The items being returned.
+    InsightsDataExportPagingData:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/InsightsDataExportResponse'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+      description: List of an instance's insights-export tasks.
+    InsightsExportInput:
+      required:
+        - beginDate
+        - endDate
+      type: object
+      properties:
+        beginDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range start date.
+          format: date
+        endDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range end date.
+          format: date
+        filters:
+          type: object
+          description: Include only the data for the specified intent, channel, or locale or any combination of the three filters.
+          example:
+            filter:
+              meta: ''
+              enclose1:
+                meta: ''
+                enclose2:
+                  meta: ''
+                  profileString:
+                    column: INTENT
+                    test:
+                      op: matches one of
+                      arg: Balances;Accounts
+              bool3:
+                content: and
+              enclose4:
+                meta: ''
+                enclose5:
+                  meta: ''
+                  profileString:
+                    column: CHANNEL
+                    test:
+                      op: matches one of
+                      arg: test; facebook
+              bool6:
+                content: and
+              enclose7:
+                meta: ''
+                enclose8:
+                  meta: ''
+                  profileString:
+                    column: BR_LANG
+                    test:
+                      op: matches one of
+                      arg: en-US; en-UK
+        createdByName:
+          type: string
+          description: A name that identifies who created the export task.
+        name:
+          type: string
+          description: Name for the export task.  The name must begin with a letter and it can contain only letters, numbers, and underscores.
+          example: FebPizzaBotExport
+    InsightsExportOutput:
+      required:
+        - beginDate
+        - endDate
+      type: object
+      properties:
+        beginDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range start date.
+          format: date
+        endDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range end date.
+          format: date
+        filters:
+          type: object
+          description: Include only the data for the specified intent, channel, or locale or any combination of the three filters.
+          example:
+            filter:
+              meta: ''
+              enclose1:
+                meta: ''
+                enclose2:
+                  meta: ''
+                  profileString:
+                    column: INTENT
+                    test:
+                      op: matches one of
+                      arg: Balances;Accounts
+              bool3:
+                content: and
+              enclose4:
+                meta: ''
+                enclose5:
+                  meta: ''
+                  profileString:
+                    column: CHANNEL
+                    test:
+                      op: matches one of
+                      arg: test; facebook
+              bool6:
+                content: and
+              enclose7:
+                meta: ''
+                enclose8:
+                  meta: ''
+                  profileString:
+                    column: BR_LANG
+                    test:
+                      op: matches one of
+                      arg: en-US; en-UK
+        createdByName:
+          type: string
+          description: A name that identifies who created the export task.
+        name:
+          type: string
+          description: A unique name, which is derived from the user-specified task name
+    InsightsExportStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 'The current status of the export.<ul><li><code>Completed</code>: The export completed successfully</li><li><code>In_Progress</code>: The export is in progress.</li><li><code>Failed</code>: The export failed.</li><li><code>Started</code>: The export has started.</li><li><code>No_Data</code>: There wasn''t any data to export.  Try a different date range or filter.</li></ul>'
+          enum:
+            - Completed
+            - In_Progress
+            - Failed
+            - Started
+            - No_Data
+        error:
+          type: string
+          description: If the export task failed, then this property explains why it failed. Otherwise, it contains 'No Error'
+    InsightsExport:
+      required:
+        - beginDate
+        - endDate
+      type: object
+      properties:
+        beginDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range start date.
+          format: date
+        endDate:
+          pattern: YYYY-MM-DD
+          type: string
+          description: Range end date.
+          format: date
+        filters:
+          type: object
+          description: Include only the data for the specified intent, channel, or locale or any combination of the three filters.
+          example:
+            filter:
+              meta: ''
+              enclose1:
+                meta: ''
+                enclose2:
+                  meta: ''
+                  profileString:
+                    column: INTENT
+                    test:
+                      op: matches one of
+                      arg: Balances;Accounts
+              bool3:
+                content: and
+              enclose4:
+                meta: ''
+                enclose5:
+                  meta: ''
+                  profileString:
+                    column: CHANNEL
+                    test:
+                      op: matches one of
+                      arg: test; facebook
+              bool6:
+                content: and
+              enclose7:
+                meta: ''
+                enclose8:
+                  meta: ''
+                  profileString:
+                    column: BR_LANG
+                    test:
+                      op: matches one of
+                      arg: en-US; en-UK
+        createdByName:
+          type: string
+          description: A name that identifies who created the export task.
+      description: The items being returned.
+    InsightsExportPagingData:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/InsightsExport'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+      description: List of a skill's insights-export tasks.
+    BundleEntries:
+      type: array
+      description: List of a skill's resource bundle messages.
+      items:
+        $ref: '#/components/schemas/LanguageBundleEntry'
+    LanguageBundleEntry:
+      type: object
+      properties:
+        createdOn:
+          type: string
+          description: The date and time, in ISO 8601 format, that the resource was created (for example, <code>2018-10-17T06:50:34.045Z</code>).
+          format: date-time
+          readOnly: true
+        updatedOn:
+          type: string
+          description: The date and time, in ISO 8601 format, that the resource was last modified (for example, <code>2018-10-17T06:50:34.045Z</code>).
+          format: date-time
+          readOnly: true
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          description: An array of links to the resource.
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/Link'
+        id:
+          type: string
+          description: The resource's unique ID.
+          readOnly: true
+        message:
+          type: string
+          description: The text to use in the skill conversation for the specified <code>languageTag</code> and <code>key</code>. This property is required for the POST method and is optional for the PATCH method.
+        languageTag:
+          type: string
+          description: Language identifier using IETF BCP 47 language tag. For example, use <code>fr</code> for French and <code>de</code> for German. Use <code>default</code> for the skill's primary language.
+        key:
+          type: string
+          description: A unique identifier for a message in the default language and all its equivalent strings in other languages. The combination of <code>key</code> and <code>languageTag</code> identifies a specific entry in the resource bundle.
+        annotation:
+          type: string
+          description: Any information that will be useful for those that may need to reference the message later, such as translators.
+        extensionType:
+          type: string
+          description: If the skill was extended from another skill, then this property shows if the message is a custom message or it was inherited from the original skill.
+          enum:
+            - INHERITED
+            - CUSTOMIZED
+      description: Resource bundle message.
+    LanguageBundleEntryErrorForm:
+      type: object
+      properties:
+        invalidEntries:
+          type: array
+          description: If the request failed because of bad keys or duplicate entries, this contains information about the message objects in the request body that caused the request to fail.
+          items:
+            $ref: '#/components/schemas/LanguageBundleEntry'
+        detail:
+          type: string
+          description: The description of the error.
+      description: List of the invalid messages.
+    LanguageBundleEntryInputForm:
+      required:
+        - key
+        - languageTag
+      type: object
+      properties:
+        languageTag:
+          type: string
+          description: Language identifier using IETF BCP 47 language tag. For example, use <code>fr</code> for French and <code>de</code> for German. Use <code>default</code> for the skill's primary language.
+        key:
+          type: string
+          description: A unique identifier for a message in the default language and all its equivalent strings in other languages. The combination of <code>key</code> and <code>languageTag</code> identifies a specific entry in the resource bundle.
+        annotation:
+          type: string
+          description: Any information that will be useful for those that may need to reference the message later, such as translators.
+        message:
+          type: string
+          description: The text to use in the skill conversation for the specified <code>languageTag</code> and <code>key</code>. This property is required for the POST method and is optional for the PATCH method.
+      description: The message to add or change.
+    importEntries:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The message to add or change.
+          items:
+            $ref: '#/components/schemas/LanguageBundleEntryInputForm'
+      description: The messages or annotations (or both) to change.
+    JSONObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+    BundleEntryByKey:
+      type: object
+      properties:
+        key:
+          type: string
+        languages:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BundleMessage'
+        extensionType:
+          type: string
+          enum:
+            - INHERITED
+            - CUSTOMIZED
+      description: The items being returned.
+    BundleMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        extensionType:
+          type: string
+          enum:
+            - INHERITED
+            - CUSTOMIZED
+        annotation:
+          type: string
+    PaginatedBundleEntries:
+      type: object
+      properties:
+        items:
+          $ref: '#/components/schemas/PagingDataBundleEntryByKey'
+      description: List of a skill's resource bundle messages.
+    PagingDataBundleEntryByKey:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/BundleEntryByKey'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+      description: List of a skill's resource bundle messages.
+    SessionInteraction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message ID.
+        payload:
+          type: string
+          description: Message payload.
+        createdOn:
+          type: integer
+          description: UNIX Epoch timestamp.
+          format: int64
+        source:
+          type: string
+          description: Message source.
+          enum:
+            - USER
+            - BOT
+            - AGENT
+            - INTENT
+      description: An interaction in the conversation.
+    SessionInteractions:
+      type: array
+      description: Get Session Interactions
+      items:
+        $ref: '#/components/schemas/SessionInteraction'
+    SkillsPaginatedData:
+      type: object
+      properties:
+        items:
+          type: array
+          description: The items being returned.
+          items:
+            $ref: '#/components/schemas/BotDetail'
+        count:
+          type: integer
+          description: The number of items returned.
+          format: int32
+          nullable: true
+        totalResults:
+          type: integer
+          description: The total number of items.
+          format: int32
+          nullable: true
+        offset:
+          type: integer
+          description: The actual index from which the items are returned.
+          format: int32
+          nullable: true
+        limit:
+          type: integer
+          description: The maximum number of items to return.
+          format: int32
+          nullable: true
+        hasMore:
+          type: boolean
+          description: Indicates if there are more items to be returned.
+        links:
+          type: array
+          properties:
+            selfLinks:
+              type: object
+              properties:
+                baseUri:
+                  type: string
+                  format: uri
+                absolutePathBuilder:
+                  type: object
+                requestUri:
+                  type: string
+                  format: uri
+                requestUriBuilder:
+                  type: object
+                baseUriBuilder:
+                  type: object
+                pathParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                queryParameters:
+                  type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                matchedURIs:
+                  type: array
+                  items:
+                    type: string
+                matchedResources:
+                  type: array
+                  items:
+                    type: object
+                pathSegments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      matrixParameters:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: string
+                      path:
+                        type: string
+                absolutePath:
+                  type: string
+                  format: uri
+                path:
+                  type: string
+              writeOnly: true
+            empty:
+              type: boolean
+          items:
+            $ref: '#/components/schemas/Link'
+      description: List of skills.
+  parameters:
+    pagingOffset:
+      name: offset
+      in: query
+      description: The number of items to skip before starting to collect the result set, where <code>0</code> is the first item.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        default: 0
+    pagingLimit:
+      name: limit
+      in: query
+      description: The number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int64
+        default: 100
+    pagingTotalResults:
+      name: totalResults
+      in: query
+      description: Whether to return the total number of items that match the request (excluding the paging parameters).
+      required: false
+      schema:
+        type: boolean
+        default: false
+  headers:
+    location:
+      description: URI to the new resource.
+      required: false
+      schema:
+        type: string
