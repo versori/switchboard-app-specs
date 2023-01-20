@@ -1,0 +1,557 @@
+openapi: 3.0.1
+info: 
+  title: Attachable For QuickBooks 
+  description: This page covers the Attachable, Upload, and Download resources used for attachment management. Attachments are supplemental information linked to a transaction or Item object. They can be files, notes, or a combination of both. In the case of file attachments, use an upload endpoint multipart request to upload the files to the QuickBooks attachment list and, optionally, to supply metadata for each via an attachable object. If meta data is not supplied with the upload request, the system creates it. In the case of a note, use the create attachable endpoint.
+  contact:
+    name: Attachable APi 
+    url: https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/attachable
+  version: v 1.0.0
+servers: 
+  - url:  https://quickbooks.api.intuit.com
+paths:
+  /v3/company/<realmID>/attachable:
+    description: Use this endpoint to attach a note to the an object. Adjust values in the AttachableRef element for your specific target object. The value for AttachableRef.EntityRef.value is the Id of the target object as returned in its response body when queried.
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              Note:
+                type: string 
+                description: The note is either related to the attachment specified with the FileName attribute, or as a standalone note. Required for note attachments.
+              FileName:
+                type: string 
+                description: FileName of the attachment. Required for file attachments.
+              AttachableRef:
+                type: object
+                description: Specifies the transaction object to which this attachable file is to be linked.
+                properties:
+                  IncludeOnSend:
+                    type: boolean
+                    description: Used when EntityRef.type references a transaction object. This field indicates whether or not the attachment is sent with the transaction when Save and Send button is clicked in the QuickBooks UI or when the Send endpoint (send email) is invoked for the object.
+                  LineInfo:
+                    type: string 
+                    description: For transaction objects, used to reference a transaction detail line.
+                  NoRefOnly:
+                    type: boolean
+                    description: Indicates whether or not to find attachable records that have no references to any entity. Combine with AttachableRef.Inactiveto return hidden references.
+                  CustomField[0..n]:
+                    type: object
+                    description: If the user tries to fetch a record without permission, the permission denied message is conveyed through this field.
+                    properties:
+                      DefinitionId:
+                        type: string 
+                        description: Unique identifier of the CustomFieldDefinition that corresponds to this CustomField.
+                      StringValue:
+                        type: string 
+                        description: The value for the StringTypecustom field.
+                      Name:
+                        type: string 
+                        description: Name of the custom field.
+                      Type:
+                        type: string 
+                        description: "Data type of custom field. Only one type is currently supported: StringType."
+                  Inactive:
+                    type: boolean
+                    description: Indicates whether or not to include references to hidden entities when filtering. When set to true , hidden references are returned in the result set. For filtering results, it works with AttachableRef.EntityRef.Type , AttachableRef.EntityRef.Value and AttachableRef.NoRefOnly filters in combination.
+                  EntityRef:
+                    type: object
+                    description: Object reference to which this attachment is linked. Set EntityRef.value with the Id of the target object as returned in its response body when queried. Set EntityRef.type with the specific type of the target object. For example, invoice, bill, item, etc.
+                    properties:
+                      value:
+                        type: string 
+                        description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                      name:
+                        type: string 
+                        description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: The attachable response body.
+        content:
+          application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Attachable'
+  /v3/company/<realmID>/attachable/operation=delete:
+    description: This operation deletes the attachable object specified in the request body. The request body must include the full payload of the attachable as returned in a read response.
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              Id:
+                type: object
+                description: Unique Identifier for an Intuit entity (object). Required for the update operation.
+              SyncToken:
+                type: string 
+                description: Version number of the object. It is used to lock an object for use by one app at a time. As soon as an application modifies an object, its SyncToken is incremented. Attempts to modify an object specifying an older SyncToken fails. Only the latest version of the object is maintained by QuickBooks Online.
+              FileName:
+                type: string 
+                description: FileName of the attachment. Required for file attachments.
+              Note:
+                type: string 
+                description: This note is either related to the attachment specified by FileName or is a standalone note. Required for standalone notes.
+              Category:
+                type: string 
+                description: "Category of the attachment. Valid values include (case sensitive): Contact Photo, Document, Image, Receipt, Signature, Sound, Other."
+              ContentType:
+                type: string 
+                description: ContentType of the attachment. Returned for file attachments.
+              PlaceName:
+                type: string 
+                description: PlaceName from where the attachment was requested.
+              AttachableRef:
+                type: object
+                description: Specifies the transaction object to which this attachable file is to be linked.
+                properties:
+                  IncludeOnSend:
+                    type: boolean 
+                    description: Used when EntityRef.type references a transaction object. This field indicates whether or not the attachment is sent with the transaction when Save and Send button is clicked in the QuickBooks UI or when the Send endpoint (send email) is invoked for the object.
+                  LineInfo:
+                    type: string 
+                    description: For transaction objects, used to reference a transaction detail line.
+                  NoRefOnly:
+                    type: boolean
+                    description: Indicates whether or not to find attachable records that have no references to any entity. Combine with AttachableRef.Inactiveto return hidden references.
+                  CustomField[0..n]:
+                    type: object
+                    description: If the user tries to fetch a record without permission, the permission denied message is conveyed through this field.
+                    properties:
+                      DefinitionId:
+                        type: string 
+                        description: Unique identifier of the CustomFieldDefinition that corresponds to this CustomField.
+                      StringValue:
+                        type: string 
+                        description: The value for the StringTypecustom field.
+                      Name:
+                        type: string 
+                        description: Name of the custom field.
+                      Type:
+                        type: string 
+                        enum: [StringType]
+                  Inactive:
+                    type: boolean
+                    description: Indicates whether or not to include references to hidden entities when filtering. When set to true , hidden references are returned in the result set. For filtering results, it works with AttachableRef.EntityRef.Type , AttachableRef.EntityRef.Value and AttachableRef.NoRefOnly filters in combination.
+                  EntityRef:
+                    type: object
+                    description: Object reference to which this attachment is linked. Set EntityRef.value with the Id of the target object as returned in its response body when queried. Set EntityRef.type with the specific type of the target object. For example, invoice, bill, item, etc.
+                    properties:
+                      value:
+                        type: string 
+                        description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                      name:
+                        type: string 
+                        description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+              Long:
+                type: string 
+                description: Longitude from where the attachment was requested.
+              Tag:
+                type: string 
+                description: Tag name for the requested attachment.
+              Lat:
+                type: string 
+                description: Latitude from where the attachment was requested.
+              MetaData:
+                type: object
+                description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications.
+                properties:
+                  CreateTime:
+                    type: object
+                    description: Time the entity was created in the source domain.
+                    properties:
+                      dateTime:
+                        type: string 
+                        description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+                  LastUpdatedTime:
+                    type: object
+                    description: Time the entity was last updated in the source domain.
+                    properties:
+                      dateTime: 
+                        type: string 
+                        description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+              FileAccessUri:
+                type: string 
+                description: FullPath FileAccess URI of the attachment. Returned for file attachments.
+              Size:
+                type: number 
+                description: Size of the attachment. Returned for file attachments.
+              ThumbnailFileAccessUri:
+                type: string 
+                description: FullPath FileAccess URI of the attachment thumbnail if the attachment file is of a content type with thumbnail support. Returned for file attachments.
+              TempDownloadUri:
+                type: string 
+                description: TempDownload URI which can be directly downloaded by clients. Returned for file attachments.
+              ThumbnailTempDownloadUri:
+                type: string 
+                description: Thumbnail TempDownload URI which can be directly downloaded by clients. This is only available if the attachment file is of a content type with thumbnail support. Returned for file attachments.
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Returns the delete response.
+        content:
+          application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Attachable'
+  /v3/company/<realmID>/download/<attachableId>:
+    description: Retrieves a temporary download URL to the specified attchableID as returned in the attachable.Id attribute from a read response. The application uses this URL to then download the file as a separate step. The URL expires after 15 minutes, after which time the app may obtain another.
+    get:
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: Returns the delete response.
+        content:
+          text/plain:
+              schema:
+                type: object
+  /v3/company/<realmID>/query/query=<selectStatement>:
+    description: The sample query on the right returns the attachable ids for all attachments linked to the purchase object whose Id is 611. To formulate this query, you must first know the type of object and its object Id using the query endpoint for that resource. Set AttachableRef.EntityRef.type with the specific type of the target object. For this example, purchase is used. Set AttachableRef.EntityRef.value with the Id of the target object as returned in its response body when queried. For this example, 611 is used.
+    get:
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          text/plain:
+              schema:
+                type: object
+  /v3/company/<realmID>/attachable/<attachableId>:
+    description: Retrieves the details of an attachable item that has been previously created.
+    get:
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Attachable'
+  /v3/company/<realmID>/attachable/fullupdate:
+    description: Use this operation to update any of the writable fields of an existing attachable object. The request body must include all writable fields of the existing object as returned in a read response. Writable fields omitted from the request body are set to NULL. The ID of the object to update is specified in the request body.
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              Id:
+                type: object
+                description: Unique Identifier for an Intuit entity (object). Required for the update operation.
+              SyncToken:
+                type: string 
+                description: Version number of the object. It is used to lock an object for use by one app at a time. As soon as an application modifies an object, its SyncToken is incremented. Attempts to modify an object specifying an older SyncToken fails. Only the latest version of the object is maintained by QuickBooks Online.
+              FileName:
+                type: string 
+                description: FileName of the attachment. Required for file attachments.
+              Note:
+                type: string 
+                description: This note is either related to the attachment specified by FileName or is a standalone note. Required for standalone notes.
+              Category:
+                type: string 
+                description: "Category of the attachment. Valid values include (case sensitive): Contact Photo, Document, Image, Receipt, Signature, Sound, Other."
+              ContentType:
+                type: string 
+                description: ContentType of the attachment. Returned for file attachments.
+              PlaceName:
+                type: string 
+                description: PlaceName from where the attachment was requested.
+              AttachableRef:
+                type: object
+                description: Specifies the transaction object to which this attachable file is to be linked.
+                properties:
+                  IncludeOnSend:
+                    type: boolean
+                    description: Used when EntityRef.type references a transaction object. This field indicates whether or not the attachment is sent with the transaction when Save and Send button is clicked in the QuickBooks UI or when the Send endpoint (send email) is invoked for the object.
+                  LineInfo:
+                    type: string 
+                    description: For transaction objects, used to reference a transaction detail line.
+                  NoRefOnly:
+                    type: string 
+                    description: Indicates whether or not to find attachable records that have no references to any entity. Combine with AttachableRef.Inactiveto return hidden references.
+                  CustomField[0..n]:
+                    type: object
+                    description: CustomField If the user tries to fetch a record without permission, the permission denied message is conveyed through this field.
+                    properties:
+                      DefinitionId:
+                        type: string 
+                        description: Unique identifier of the CustomFieldDefinition that corresponds to this CustomField.
+                      StringValue:
+                        type: string 
+                        description: The value for the StringTypecustom field.
+                      Name:
+                        type: string 
+                        description: Name of the custom field.
+                      Type:
+                        type: string 
+                        enum: [StringType]
+                  Inactive:
+                    type: boolean
+                    description: Indicates whether or not to include references to hidden entities when filtering. When set to true , hidden references are returned in the result set. For filtering results, it works with AttachableRef.EntityRef.Type , AttachableRef.EntityRef.Value and AttachableRef.NoRefOnly filters in combination.
+                  EntityRef:
+                    type: object
+                    description: Object reference to which this attachment is linked. Set EntityRef.value with the Id of the target object as returned in its response body when queried. Set EntityRef.type with the specific type of the target object. For example, invoice, bill, item, etc.
+                    properties:
+                      value:
+                        type: string 
+                        description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                      name:
+                        type: string
+                        description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+              Long:
+                type: string 
+                description: Longitude from where the attachment was requested.
+              Tag:
+                type: string 
+                description: Tag name for the requested attachment.
+              Lat:
+                type: string 
+                description: Latitude from where the attachment was requested.
+              MetaData:
+                type: object
+                description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications.
+                properties:
+                  CreateTime:
+                    type: object
+                    description: Time the entity was created in the source domain.
+                    properties:
+                      dateTime:
+                        type: string 
+                        description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+                  LastUpdatedTime:
+                    type: object
+                    description: Time the entity was last updated in the source domain.
+                    properties:
+                      dateTime:
+                        type: string 
+                        description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+              FileAccessUri:
+                type: string 
+                description: FullPath FileAccess URI of the attachment. Returned for file attachments.
+              Size:
+                type: number 
+                description: Size of the attachment. Returned for file attachments.
+              ThumbnailFileAccessUri:
+                type: string 
+                description: FullPath FileAccess URI of the attachment thumbnail if the attachment file is of a content type with thumbnail support. Returned for file attachments.
+              TempDownloadUri:
+                type: string 
+                description: TempDownload URI which can be directly downloaded by clients. Returned for file attachments.
+              ThumbnailTempDownloadUri:
+                type: string 
+                description: Thumbnail TempDownload URI which can be directly downloaded by clients. This is only available if the attachment file is of a content type with thumbnail support. Returned for file attachments.
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Attachable'
+  /v3/company/<realmID>/upload:
+    description: ""
+    post:
+     requestBody:
+      content:
+        application.json:
+          schema:
+            type: object
+            properties:
+              Note:
+                type: string 
+                description: The note is either related to the attachment specified with the FileName attribute, or as a standalone note. Required for note attachments.
+              FileName:
+                type: string 
+                description: FileName of the attachment. Required for file attachments.
+              AttachableRef:
+                type: object
+                description: Specifies the transaction object to which this attachable file is to be linked.
+                properties:
+                  IncludeOnSend:
+                    type: boolean
+                    description: Used when EntityRef.type references a transaction object. This field indicates whether or not the attachment is sent with the transaction when Save and Send button is clicked in the QuickBooks UI or when the Send endpoint (send email) is invoked for the object.
+                  LineInfo:
+                    type: string 
+                    description: For transaction objects, used to reference a transaction detail line.
+                  NoRefOnly:
+                    type: boolean
+                    description: Indicates whether or not to find attachable records that have no references to any entity. Combine with AttachableRef.Inactiveto return hidden references.
+                  CustomField[0..n]:
+                    type: object
+                    description: If the user tries to fetch a record without permission, the permission denied message is conveyed through this field.
+                    properties:
+                      DefinitionId:
+                        type: string 
+                        description: Unique identifier of the CustomFieldDefinition that corresponds to this CustomField.
+                      StringValue:
+                        type: string 
+                        description: The value for the StringTypecustom field.
+                      Name:
+                        type: string 
+                        description: Name of the custom field.
+                      Type:
+                        type: string 
+                        description: "Data type of custom field. Only one type is currently supported: StringType."
+                        enum: [StringType]
+                  Inactive:
+                    type: boolean
+                    description: Indicates whether or not to include references to hidden entities when filtering. When set to true , hidden references are returned in the result set. For filtering results, it works with AttachableRef.EntityRef.Type , AttachableRef.EntityRef.Value and AttachableRef.NoRefOnly filters in combination.
+                  EntityRef:
+                    type: object
+                    description: Object reference to which this attachment is linked. Set EntityRef.value with the Id of the target object as returned in its response body when queried. Set EntityRef.type with the specific type of the target object. For example, invoice, bill, item, etc.
+                    properties:
+                      value:
+                        type: string 
+                        description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                      name:
+                        type: string 
+                        description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+                  
+     security:
+      - OAuth2: [admin]
+     responses:
+       200:
+        description: ""
+        content:
+          multipart/form-data:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Attachable'                
+components:
+  schemas:
+      Attachable:
+        type: object
+        properties:
+          Id:
+            type: object
+            description: Unique Identifier for an Intuit entity (object). Required for the update operation.
+          SyncToken:
+            type: string 
+            description: Version number of the object. It is used to lock an object for use by one app at a time. As soon as an application modifies an object, its SyncToken is incremented. Attempts to modify an object specifying an older SyncToken fails. Only the latest version of the object is maintained by QuickBooks Online.
+          FileName:
+            type: string 
+            description: FileName of the attachment. Required for file attachments.
+          Note:
+            type: string 
+            description: This note is either related to the attachment specified by FileName or is a standalone note. Required for standalone notes.
+          Category:
+            type: string 
+            description: "Category of the attachment. Valid values include (case sensitive): Contact Photo, Document, Image, Receipt, Signature, Sound, Other."
+          ContentType:
+            type: string 
+            description: ContentType of the attachment. Returned for file attachments.
+          PlaceName:
+            type: string 
+            description: PlaceName from where the attachment was requested.
+          AttachableRef:
+            type: object
+            description: Specifies the transaction object to which this attachable file is to be linked.
+            properties:
+              IncludeOnSend:
+                type: boolean
+                description: Used when EntityRef.type references a transaction object. This field indicates whether or not the attachment is sent with the transaction when Save and Send button is clicked in the QuickBooks UI or when the Send endpoint (send email) is invoked for the object.
+              LineInfo:
+                type: string 
+                description: For transaction objects, used to reference a transaction detail line.
+              NoRefOnly:
+                type: boolean
+                description: Indicates whether or not to find attachable records that have no references to any entity. Combine with AttachableRef.Inactiveto return hidden references.
+              CustomField[0..n]:
+                type: object
+                description: If the user tries to fetch a record without permission, the permission denied message is conveyed through this field.
+                properties:
+                  DefinitionId:
+                    type: string 
+                    description: Unique identifier of the CustomFieldDefinition that corresponds to this CustomField.
+                  StringValue:
+                    type: string 
+                    description: The value for the StringTypecustom field.
+                  Name:
+                    type: string 
+                    description: Name of the custom field.
+                  Type:
+                    type: string 
+                    description: "Data type of custom field. Only one type is currently supported: StringType."
+              Inactive:
+                type: boolean
+                description: "Indicates whether or not to include references to hidden entities when filtering. When set to true , hidden references are returned in the result set. For filtering results, it works with AttachableRef.EntityRef.Type , AttachableRef.EntityRef.Value and AttachableRef.NoRefOnly filters in combination."
+              EntityRef:
+                type: object
+                description: "Object reference to which this attachment is linked. Set EntityRef.value with the Id of the target object as returned in its response body when queried. Set EntityRef.type with the specific type of the target object. For example, invoice, bill, item, etc."
+                properties:
+                  value:
+                    type: string 
+                    description: The ID for the referenced object as found in the Id field of the object payload. The context is set by the type of reference and is specific to the QuickBooks company file.
+                  name:
+                    type: string 
+                    description: An identifying name for the object being referenced by value and is derived from the field that holds the common name of that object. This varies by context and specific type of object referenced. For example, references to a Customer object use Customer.DisplayName to populate this field. Optionally returned in responses, implementation dependent.
+          Long:
+            type: string 
+            description: Longitude from where the attachment was requested.
+          Tag:
+            type: string 
+            description: Tag name for the requested attachment.
+          Lat:
+            type: string 
+            description: Latitude from where the attachment was requested.
+          MetaData:
+            type: object
+            description: Descriptive information about the entity. The MetaData values are set by Data Services and are read only for all applications.
+            properties:
+              CreateTime:
+                type: object
+                description: Time the entity was created in the source domain.
+                properties:
+                  dateTime:
+                    type: string 
+                    description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+              LastUpdatedTime:
+                type: object
+                description: Time the entity was last updated in the source domain.
+                properties:
+                  dateTime: 
+                    type: string 
+                    description: "Local time zone: YYYY-MM-DDTHH:MM:SS UTC: YYYY-MM-DDT HH :MM: SSZ Specific time zone: YYYY-MM-DDT HH :MM:SS +/- HH :MM"
+          FileAccessUri:
+            type: string 
+            description: FullPath FileAccess URI of the attachment. Returned for file attachments.
+          Size:
+            type: number 
+            description: Size of the attachment. Returned for file attachments.
+          ThumbnailFileAccessUri:
+            type: string 
+            description: FullPath FileAccess URI of the attachment thumbnail if the attachment file is of a content type with thumbnail support. Returned for file attachments.
+          TempDownloadUri:
+            type: string 
+            description: TempDownload URI which can be directly downloaded by clients. Returned for file attachments.
+          ThumbnailTempDownloadUri:
+            type: string 
+            description: Thumbnail TempDownload URI which can be directly downloaded by clients. This is only available if the attachment file is of a content type with thumbnail support. Returned for file attachments.
+                
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://appcenter.intuit.com/connect/oauth2
+          tokenUrl: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+          scopes:
+            com.intuit.quickbooks.accounting: Grants access to quickbooks accounting scope
