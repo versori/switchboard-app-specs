@@ -1,0 +1,1965 @@
+openapi: 3.0.3
+info:
+  title: Shopify REST Admin API
+  version: 2022-10
+externalDocs:
+  url: https://shopify.dev/api/admin-rest
+servers:
+  - url: https://{{storeSlug}}.myshopify.com
+    description: Shopify REST Admin API
+paths:
+  /admin/api/2022-10/webhooks.json:
+    post:
+      operationId: CreateWebhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookBody'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+      callbacks:
+        product/created:
+          '{$request.body#/webhook/address}':
+            post:
+              operationId: ProductCreated
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/WebhookPayloadProductCreated'
+              responses:
+                '200':
+                  description: OK
+        product/updated:
+          '{$request.body#/webhook/address}':
+            post:
+              operationId: ProductUpdated
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/WebhookPayloadProductUpdated'
+              responses:
+                '200':
+                  description: OK
+        order/created:
+          '{$request.body#/webhook/address}':
+            post:
+              operationId: OrderCreated
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/WebhookPayloadOrderCreated'
+              responses:
+                '200':
+                  description: OK
+  /admin/api/2022-10/products.json:
+    post:
+      operationId: CreateProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductBody'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductBody'
+  /admin/api/2022-10/products/{product_id}.json:
+    put:
+      operationId: UpdateProduct
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductBody'
+  /admin/api/2022-10/inventory_levels/set.json:
+    post:
+      operationId: SetInventoryLevel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetInventoryLevelBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryLevelBody'
+  /admin/api/2022-10/customers/{customer_id}.json:
+    get:
+      operationId: GetCustomer
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+  /admin/api/2022-10/orders/{order_id}.json:
+    get:
+      operationId: GetOrder
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+components:
+  schemas:
+    CreateWebhookBody:
+      type: object
+      properties:
+        webhook:
+          $ref: '#/components/schemas/CreateWebhookWebhook'
+    CreateWebhookWebhook:
+      type: object
+      properties:
+        address:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        format:
+          type: string
+        metafield_namespaces:
+          type: array
+          items:
+            type: string
+        private_metafield_namespaces:
+          type: array
+          items:
+            type: string
+        topic:
+          type: string
+    CreateProductBody:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/CreateProductProduct'
+    CreateProductProduct:
+      type: object
+      properties:
+        body_html:
+          type: string
+        handle:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateProductImage'
+        options:
+          type: array
+          items:
+              $ref: '#/components/schemas/CreateProductOption'
+        product_type:
+          type: string
+        published_at:
+          type: string
+        published_scope:
+          type: string
+        status:
+          type: string
+        template_suffix:
+          type: string
+        title:
+          type: string
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateProductProductVariant'
+        vendor:
+          type: string
+        metafields:
+          type: array
+          description: | 
+            Metafields are not documented as part of the core Product resource, but is supported by the API as indicated
+            by the individual examples.
+          items:
+            $ref: '#/components/schemas/CreateProductMetafield'
+    CreateProductImage:
+      type: object
+      properties:
+        alt:
+          type: string
+        src:
+          type: string
+    CreateProductOption:
+      type: object
+      properties:
+        name:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+    CreateProductProductVariant:
+      type: object
+      properties:
+        barcode:
+          type: string
+        compare_at_price:
+          type: string
+        fulfillment_service:
+          type: string
+        grams:
+          type: integer
+        inventory_management:
+          type: string
+        inventory_policy:
+          type: string
+          enum:
+            - deny
+            - continue
+        option1:
+          type: string
+        option2:
+          type: string
+        option3:
+          type: string
+        price:
+          type: string
+        requires_shipping:
+          type: boolean
+        sku:
+          type: string
+        taxable:
+          type: boolean
+        weight:
+          type: number
+        weight_unit:
+          type: string
+          enum:
+            - g
+            - kg
+            - oz
+            - lb
+    CreateProductMetafield:
+      type: object
+      properties:
+        namespace:
+          type: string
+        key:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+          enum:
+            - boolean
+            - collection_reference
+            - color
+            - date
+            - date_time
+            - dimension
+            - file_reference
+            - json
+            - money
+            - multi_line_text_field
+            - number_decimal
+            - number_integer
+            - page_reference
+            - product_reference
+            - rating
+            - single_line_text_field
+            - url
+            - variant_reference
+            - volume
+            - weight
+    ProductBody:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/Product'
+    UpdateProductBody:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/Product'
+    SetInventoryLevelBody:
+      type: object
+      properties:
+        location_id:
+          type: integer
+        inventory_item_id:
+          type: integer
+        available:
+          type: integer
+    InventoryLevelBody:
+      type: object
+      properties:
+        inventory_level:
+          $ref: '#/components/schemas/InventoryLevel'
+    InventoryLevel:
+      type: object
+      properties:
+        inventory_item_id:
+          type: integer
+        location_id:
+          type: integer
+        available:
+          type: integer
+        updated_at:
+          type: string
+        admin_graphql_api_id:
+          type: string
+    WebhookBody:
+      type: object
+      properties:
+        webhook:
+          $ref: '#/components/schemas/Webhook'
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: integer
+        address:
+          type: string
+        topic:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        format:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        metafield_namespaces:
+          type: array
+          items:
+            type: string
+        api_version:
+          type: string
+        private_metafield_namespaces:
+          type: array
+          items:
+            type: string
+    WebhookPayloadProductCreated:
+      $ref: '#/components/schemas/Product'
+    WebhookPayloadProductUpdated:
+      $ref: '#/components/schemas/Product'
+    WebhookPayloadOrderCreated:
+      type: object
+      properties:
+        id:
+          type: number
+        admin_graphql_api_id:
+          type: string
+        app_id: {}
+        browser_ip: {}
+        buyer_accepts_marketing:
+          type: boolean
+        cancel_reason:
+          type: string
+        cancelled_at:
+          type: string
+        cart_token: {}
+        checkout_id: {}
+        checkout_token: {}
+        closed_at: {}
+        confirmed:
+          type: boolean
+        contact_email:
+          type: string
+        created_at:
+          type: string
+        currency:
+          type: string
+        current_subtotal_price:
+          type: string
+        current_subtotal_price_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        current_total_discounts:
+          type: string
+        current_total_discounts_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        current_total_duties_set: {}
+        current_total_price:
+          type: string
+        current_total_price_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        current_total_tax:
+          type: string
+        current_total_tax_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        customer_locale:
+          type: string
+        device_id: {}
+        discount_codes:
+          type: array
+          items: {}
+        email:
+          type: string
+        estimated_taxes:
+          type: boolean
+        financial_status:
+          type: string
+        fulfillment_status:
+          type: string
+        gateway: {}
+        landing_site: {}
+        landing_site_ref: {}
+        location_id: {}
+        merchant_of_record_app_id: {}
+        name:
+          type: string
+        note: {}
+        note_attributes:
+          type: array
+          items: {}
+        number:
+          type: number
+        order_number:
+          type: number
+        order_status_url:
+          type: string
+        original_total_duties_set: {}
+        payment_gateway_names:
+          type: array
+          items:
+            type: string
+        phone: {}
+        presentment_currency:
+          type: string
+        processed_at: {}
+        processing_method:
+          type: string
+        reference: {}
+        referring_site: {}
+        source_identifier: {}
+        source_name:
+          type: string
+        source_url: {}
+        subtotal_price:
+          type: string
+        subtotal_price_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        tags:
+          type: string
+        tax_lines:
+          type: array
+          items: {}
+        taxes_included:
+          type: boolean
+        test:
+          type: boolean
+        token:
+          type: string
+        total_discounts:
+          type: string
+        total_discounts_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        total_line_items_price:
+          type: string
+        total_line_items_price_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        total_outstanding:
+          type: string
+        total_price:
+          type: string
+        total_price_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        total_shipping_price_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        total_tax:
+          type: string
+        total_tax_set:
+          type: object
+          properties:
+            shop_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+            presentment_money:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency_code:
+                  type: string
+              required:
+                - amount
+                - currency_code
+          required:
+            - shop_money
+            - presentment_money
+        total_tip_received:
+          type: string
+        total_weight:
+          type: number
+        updated_at:
+          type: string
+        user_id: {}
+        billing_address:
+          type: object
+          properties:
+            first_name:
+              type: string
+            address1:
+              type: string
+            phone:
+              type: string
+            city:
+              type: string
+            zip:
+              type: string
+            province:
+              type: string
+            country:
+              type: string
+            last_name:
+              type: string
+            address2: {}
+            company:
+              type: string
+            latitude: {}
+            longitude: {}
+            name:
+              type: string
+            country_code:
+              type: string
+            province_code:
+              type: string
+          required:
+            - first_name
+            - address1
+            - phone
+            - city
+            - zip
+            - province
+            - country
+            - last_name
+            - address2
+            - company
+            - latitude
+            - longitude
+            - name
+            - country_code
+            - province_code
+        customer:
+          type: object
+          properties:
+            id:
+              type: number
+            email:
+              type: string
+            accepts_marketing:
+              type: boolean
+            created_at: {}
+            updated_at: {}
+            first_name:
+              type: string
+            last_name:
+              type: string
+            state:
+              type: string
+            note: {}
+            verified_email:
+              type: boolean
+            multipass_identifier: {}
+            tax_exempt:
+              type: boolean
+            phone: {}
+            email_marketing_consent:
+              type: object
+              properties:
+                state:
+                  type: string
+                opt_in_level: {}
+                consent_updated_at: {}
+              required:
+                - state
+                - opt_in_level
+                - consent_updated_at
+            sms_marketing_consent: {}
+            tags:
+              type: string
+            currency:
+              type: string
+            accepts_marketing_updated_at: {}
+            marketing_opt_in_level: {}
+            tax_exemptions:
+              type: array
+              items: {}
+            admin_graphql_api_id:
+              type: string
+            default_address:
+              type: object
+              properties:
+                id:
+                  type: number
+                customer_id:
+                  type: number
+                first_name: {}
+                last_name: {}
+                company: {}
+                address1:
+                  type: string
+                address2: {}
+                city:
+                  type: string
+                province:
+                  type: string
+                country:
+                  type: string
+                zip:
+                  type: string
+                phone:
+                  type: string
+                name:
+                  type: string
+                province_code:
+                  type: string
+                country_code:
+                  type: string
+                country_name:
+                  type: string
+                default:
+                  type: boolean
+              required:
+                - id
+                - customer_id
+                - first_name
+                - last_name
+                - company
+                - address1
+                - address2
+                - city
+                - province
+                - country
+                - zip
+                - phone
+                - name
+                - province_code
+                - country_code
+                - country_name
+                - default
+          required:
+            - id
+            - email
+            - accepts_marketing
+            - created_at
+            - updated_at
+            - first_name
+            - last_name
+            - state
+            - note
+            - verified_email
+            - multipass_identifier
+            - tax_exempt
+            - phone
+            - email_marketing_consent
+            - sms_marketing_consent
+            - tags
+            - currency
+            - accepts_marketing_updated_at
+            - marketing_opt_in_level
+            - tax_exemptions
+            - admin_graphql_api_id
+            - default_address
+        discount_applications:
+          type: array
+          items: {}
+        fulfillments:
+          type: array
+          items: {}
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              admin_graphql_api_id:
+                type: string
+              fulfillable_quantity:
+                type: number
+              fulfillment_service:
+                type: string
+              fulfillment_status: {}
+              gift_card:
+                type: boolean
+              grams:
+                type: number
+              name:
+                type: string
+              price:
+                type: string
+              price_set:
+                type: object
+                properties:
+                  shop_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                  presentment_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                required:
+                  - shop_money
+                  - presentment_money
+              product_exists:
+                type: boolean
+              product_id:
+                type: number
+              properties:
+                type: array
+                items: {}
+              quantity:
+                type: number
+              requires_shipping:
+                type: boolean
+              sku:
+                type: string
+              taxable:
+                type: boolean
+              title:
+                type: string
+              total_discount:
+                type: string
+              total_discount_set:
+                type: object
+                properties:
+                  shop_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                  presentment_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                required:
+                  - shop_money
+                  - presentment_money
+              variant_id:
+                type: number
+              variant_inventory_management:
+                type: string
+              variant_title: {}
+              vendor: {}
+              tax_lines:
+                type: array
+                items: {}
+              duties:
+                type: array
+                items: {}
+              discount_allocations:
+                type: array
+                items: {}
+            required:
+              - id
+              - admin_graphql_api_id
+              - fulfillable_quantity
+              - fulfillment_service
+              - fulfillment_status
+              - gift_card
+              - grams
+              - name
+              - price
+              - price_set
+              - product_exists
+              - product_id
+              - properties
+              - quantity
+              - requires_shipping
+              - sku
+              - taxable
+              - title
+              - total_discount
+              - total_discount_set
+              - variant_id
+              - variant_inventory_management
+              - variant_title
+              - vendor
+              - tax_lines
+              - duties
+              - discount_allocations
+        payment_terms: {}
+        refunds:
+          type: array
+          items: {}
+        shipping_address:
+          type: object
+          properties:
+            first_name:
+              type: string
+            address1:
+              type: string
+            phone:
+              type: string
+            city:
+              type: string
+            zip:
+              type: string
+            province:
+              type: string
+            country:
+              type: string
+            last_name:
+              type: string
+            address2: {}
+            company:
+              type: string
+            latitude: {}
+            longitude: {}
+            name:
+              type: string
+            country_code:
+              type: string
+            province_code:
+              type: string
+          required:
+            - first_name
+            - address1
+            - phone
+            - city
+            - zip
+            - province
+            - country
+            - last_name
+            - address2
+            - company
+            - latitude
+            - longitude
+            - name
+            - country_code
+            - province_code
+        shipping_lines:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              carrier_identifier: {}
+              code: {}
+              delivery_category: {}
+              discounted_price:
+                type: string
+              discounted_price_set:
+                type: object
+                properties:
+                  shop_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                  presentment_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                required:
+                  - shop_money
+                  - presentment_money
+              phone: {}
+              price:
+                type: string
+              price_set:
+                type: object
+                properties:
+                  shop_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                  presentment_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                required:
+                  - shop_money
+                  - presentment_money
+              requested_fulfillment_service_id: {}
+              source:
+                type: string
+              title:
+                type: string
+              tax_lines:
+                type: array
+                items: {}
+              discount_allocations:
+                type: array
+                items: {}
+            required:
+              - id
+              - carrier_identifier
+              - code
+              - delivery_category
+              - discounted_price
+              - discounted_price_set
+              - phone
+              - price
+              - price_set
+              - requested_fulfillment_service_id
+              - source
+              - title
+              - tax_lines
+              - discount_allocations
+      required:
+        - id
+        - admin_graphql_api_id
+        - app_id
+        - browser_ip
+        - buyer_accepts_marketing
+        - cancel_reason
+        - cancelled_at
+        - cart_token
+        - checkout_id
+        - checkout_token
+        - closed_at
+        - confirmed
+        - contact_email
+        - created_at
+        - currency
+        - current_subtotal_price
+        - current_subtotal_price_set
+        - current_total_discounts
+        - current_total_discounts_set
+        - current_total_duties_set
+        - current_total_price
+        - current_total_price_set
+        - current_total_tax
+        - current_total_tax_set
+        - customer_locale
+        - device_id
+        - discount_codes
+        - email
+        - estimated_taxes
+        - financial_status
+        - fulfillment_status
+        - gateway
+        - landing_site
+        - landing_site_ref
+        - location_id
+        - merchant_of_record_app_id
+        - name
+        - note
+        - note_attributes
+        - number
+        - order_number
+        - order_status_url
+        - original_total_duties_set
+        - payment_gateway_names
+        - phone
+        - presentment_currency
+        - processed_at
+        - processing_method
+        - reference
+        - referring_site
+        - source_identifier
+        - source_name
+        - source_url
+        - subtotal_price
+        - subtotal_price_set
+        - tags
+        - tax_lines
+        - taxes_included
+        - test
+        - token
+        - total_discounts
+        - total_discounts_set
+        - total_line_items_price
+        - total_line_items_price_set
+        - total_outstanding
+        - total_price
+        - total_price_set
+        - total_shipping_price_set
+        - total_tax
+        - total_tax_set
+        - total_tip_received
+        - total_weight
+        - updated_at
+        - user_id
+        - billing_address
+        - customer
+        - discount_applications
+        - fulfillments
+        - line_items
+        - payment_terms
+        - refunds
+        - shipping_address
+        - shipping_lines
+    Product:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        body_html:
+          type: string
+        vendor:
+          type: string
+        product_type:
+          type: string
+        created_at:
+          type: string
+        handle:
+          type: string
+        updated_at:
+          type: string
+        published_at:
+          type: string
+        template_suffix:
+          type: string
+        status:
+          type: string
+        published_scope:
+          type: string
+        tags:
+          type: string
+        admin_graphql_api_id:
+          type: string
+        metafields:
+          type: array
+          description: |
+            Metafields are custom key/value pairs that you can attach to any resource. These will only be populated in
+            webhook payloads if the webhook is configured to include `metafield_namespaces`.
+          items:
+            $ref: '#/components/schemas/Metafield'
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductVariant'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantOption'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        image:
+          $ref: '#/components/schemas/Image'
+      required:
+        - id
+        - title
+        - body_html
+        - vendor
+        - product_type
+        - created_at
+        - handle
+        - updated_at
+        - published_at
+        - template_suffix
+        - status
+        - published_scope
+        - tags
+        - admin_graphql_api_id
+    Metafield:
+      type: object
+      properties:
+        id:
+          type: number
+        namespace:
+          type: string
+        key:
+          type: string
+        value:
+          type: string
+        owner_id:
+          type: number
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        owner_resource:
+          type: string
+        type:
+          type: string
+        admin_graphql_api_id:
+          type: string
+      required:
+        - id
+        - namespace
+        - key
+        - value
+        - description
+        - owner_id
+        - created_at
+        - updated_at
+        - owner_resource
+        - type
+        - admin_graphql_api_id
+    ProductVariant:
+      type: object
+      properties:
+        id:
+          type: number
+        product_id:
+          type: number
+        title:
+          type: string
+        price:
+          type: string
+        sku:
+          type: string
+        position:
+          type: number
+        inventory_policy:
+          type: string
+        compare_at_price:
+          type: string
+        fulfillment_service:
+          type: string
+        inventory_management:
+          type: string
+        option1:
+          type: string
+        option2:
+          type: string
+        option3:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        taxable:
+          type: boolean
+        barcode:
+          type: string
+        grams:
+          type: number
+        image_id:
+          type: string
+        weight:
+          type: number
+        weight_unit:
+          type: string
+        inventory_item_id:
+          type: number
+        inventory_quantity:
+          type: number
+        old_inventory_quantity:
+          type: number
+        requires_shipping:
+          type: boolean
+        admin_graphql_api_id:
+          type: string
+        metafields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metafield'
+      required:
+        - id
+        - product_id
+        - title
+        - price
+        - sku
+        - position
+        - inventory_policy
+        - fulfillment_service
+        - inventory_management
+        - created_at
+        - updated_at
+        - taxable
+        - barcode
+        - inventory_item_id
+        - inventory_quantity
+        - requires_shipping
+        - admin_graphql_api_id
+    VariantOption:
+      type: object
+      properties:
+        id:
+          type: number
+        product_id:
+          type: number
+        name:
+          type: string
+        position:
+          type: number
+        values:
+          type: array
+          items:
+            type: string
+    Image:
+      type: object
+      properties:
+        id:
+          type: number
+        product_id:
+          type: number
+        position:
+          type: number
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        alt:
+          type: string
+        width:
+          type: number
+        height:
+          type: number
+        src:
+          type: string
+        variant_ids:
+          type: array
+          items: { }
+        admin_graphql_api_id:
+          type: string
+      required:
+        - id
+        - product_id
+        - position
+        - created_at
+        - updated_at
+        - width
+        - height
+        - src
+        - admin_graphql_api_id
+    Customer: 
+      type: object
+      properties:
+        accepts_marketing:
+          type: boolean
+          example: false
+        accepts_marketing_updated_at:
+          type: string
+          example: 2005-06-12T11:57:11-04:00
+        addresses:
+          type: array
+          items:
+            type: object
+            properties:
+              address1:
+                type: string
+                example: Chestnut Street 92
+              address2:
+                type: string
+                example: ''
+              city:
+                type: string
+                example: Louisville
+              company:
+                nullable: true
+                example: null
+              country:
+                type: string
+                example: United States
+              country_code:
+                type: string
+                example: US
+              country_name:
+                type: string
+                example: United States
+              customer_id:
+                type: number
+                example: 207119551
+              default:
+                type: boolean
+                example: true
+              first_name:
+                nullable: true
+                example: null
+              id:
+                type: number
+                example: 207119551
+              last_name:
+                nullable: true
+                example: null
+              name:
+                type: string
+                example: ''
+              phone:
+                type: string
+                example: 555-625-1199
+              province:
+                type: string
+                example: Kentucky
+              province_code:
+                type: string
+                example: KY
+              zip:
+                type: string
+                example: '40202'
+          example:
+          - address1: Chestnut Street 92
+            address2: ''
+            city: Louisville
+            company: null
+            country: United States
+            country_code: US
+            country_name: United States
+            customer_id: 207119551
+            default: true
+            first_name: null
+            id: 207119551
+            last_name: null
+            name: ''
+            phone: 555-625-1199
+            province: Kentucky
+            province_code: KY
+            zip: '40202'
+        admin_graphql_api_id:
+          type: string
+          example: gid://shopify/Customer/207119551
+        created_at:
+          type: string
+          example: 2020-01-14T11:12:13-05:00
+        currency:
+          type: string
+          example: USD
+        default_address:
+          type: object
+          properties:
+            address1:
+              type: string
+              example: Chestnut Street 92
+            address2:
+              type: string
+              example: ''
+            city:
+              type: string
+              example: Louisville
+            company:
+              nullable: true
+              example: null
+            country:
+              type: string
+              example: United States
+            country_code:
+              type: string
+              example: US
+            country_name:
+              type: string
+              example: United States
+            customer_id:
+              type: number
+              example: 207119551
+            default:
+              type: boolean
+              example: true
+            first_name:
+              nullable: true
+              example: null
+            id:
+              type: number
+              example: 207119551
+            last_name:
+              nullable: true
+              example: null
+            name:
+              type: string
+              example: ''
+            phone:
+              type: string
+              example: 555-625-1199
+            province:
+              type: string
+              example: Kentucky
+            province_code:
+              type: string
+              example: KY
+            zip:
+              type: string
+              example: '40202'
+        email:
+          type: string
+          example: bob.norman@hostmail.com
+        first_name:
+          type: string
+          example: Bob
+        id:
+          type: number
+          example: 207119551
+        last_name:
+          type: string
+          example: Norman
+        last_order_id:
+          type: number
+          example: 450789469
+        last_order_name:
+          type: string
+          example: '#1001'
+        marketing_opt_in_level:
+          nullable: true
+          example: null
+        multipass_identifier:
+          nullable: true
+          example: null
+        note:
+          nullable: true
+          example: null
+        orders_count:
+          type: number
+          example: 1
+        phone:
+          nullable: true
+          example: null
+        state:
+          type: string
+          example: disabled
+        tags:
+          type: string
+          example: ''
+        tax_exempt:
+          type: boolean
+          example: false
+        tax_exemptions:
+          type: array
+          items: {}
+          example: []
+        total_spent:
+          type: string
+          example: '199.65'
+        updated_at:
+          type: string
+          example: 2020-01-14T11:12:13-05:00
+        verified_email:
+          type: boolean
+          example: true
+    Order: 
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        total_price:
+          type: string
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              admin_graphql_api_id:
+                type: string
+              fulfillable_quantity:
+                type: number
+              fulfillment_service:
+                type: string
+              fulfillment_status: {}
+              gift_card:
+                type: boolean
+              grams:
+                type: number
+              name:
+                type: string
+              price:
+                type: string
+              price_set:
+                type: object
+                properties:
+                  shop_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                  presentment_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                required:
+                  - shop_money
+                  - presentment_money
+              product_exists:
+                type: boolean
+              product_id:
+                type: number
+              properties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
+              quantity:
+                type: number
+              requires_shipping:
+                type: boolean
+              sku:
+                type: string
+              taxable:
+                type: boolean
+              title:
+                type: string
+              total_discount:
+                type: string
+              total_discount_set:
+                type: object
+                properties:
+                  shop_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                  presentment_money:
+                    type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency_code:
+                        type: string
+                    required:
+                      - amount
+                      - currency_code
+                required:
+                  - shop_money
+                  - presentment_money
+              variant_id:
+                type: number
+              variant_inventory_management:
+                type: string
+              variant_title:
+                type: string
+              vendor: {}
+              tax_lines:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    channel_liable: {}
+                    price:
+                      type: string
+                    price_set:
+                      type: object
+                      properties:
+                        shop_money:
+                          type: object
+                          properties:
+                            amount:
+                              type: string
+                            currency_code:
+                              type: string
+                          required:
+                            - amount
+                            - currency_code
+                        presentment_money:
+                          type: object
+                          properties:
+                            amount:
+                              type: string
+                            currency_code:
+                              type: string
+                          required:
+                            - amount
+                            - currency_code
+                      required:
+                        - shop_money
+                        - presentment_money
+                    rate:
+                      type: number
+                    title:
+                      type: string
+                  required:
+                    - channel_liable
+                    - price
+                    - price_set
+                    - rate
+                    - title
+              duties:
+                type: array
+                items: {}
+              discount_allocations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    amount:
+                      type: string
+                    amount_set:
+                      type: object
+                      properties:
+                        shop_money:
+                          type: object
+                          properties:
+                            amount:
+                              type: string
+                            currency_code:
+                              type: string
+                          required:
+                            - amount
+                            - currency_code
+                        presentment_money:
+                          type: object
+                          properties:
+                            amount:
+                              type: string
+                            currency_code:
+                              type: string
+                          required:
+                            - amount
+                            - currency_code
+                      required:
+                        - shop_money
+                        - presentment_money
+                    discount_application_index:
+                      type: number
+                  required:
+                    - amount
+                    - amount_set
+                    - discount_application_index
+            required:
+              - id
+              - admin_graphql_api_id
+              - fulfillable_quantity
+              - fulfillment_service
+              - fulfillment_status
+              - gift_card
+              - grams
+              - name
+              - price
+              - price_set
+              - product_exists
+              - product_id
+              - properties
+              - quantity
+              - requires_shipping
+              - sku
+              - taxable
+              - title
+              - total_discount
+              - total_discount_set
+              - variant_id
+              - variant_inventory_management
+              - variant_title
+              - vendor
+              - tax_lines
+              - duties
+              - discount_allocations
+      required:
+        - id
+        - name
+        - total_price
+        - line_items
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Shopify-Access-Token
