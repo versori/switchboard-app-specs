@@ -1,0 +1,406 @@
+openapi: 3.1.0
+info:
+  title: Salesforce B2C
+  description: |-
+    The Salesforce B2C API.
+servers:
+  - url: https://{shortCode}.api.commercecloud.salesforce.com
+    description: Base url for Salesforce B2C API
+    variables:
+      shortCode:
+        description: A region-specific merchant identifier.
+paths:
+  /product/products/v1/organisations/{organisationId}/products/{productId}:
+    get:
+      operationId: GetProduct
+      summary: Action to get product information
+      parameters:
+        - name: organisationId
+          in: path
+          description: The organisations ID code.
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          description: The ID of the product
+          required: true
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: The site context
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Retrieved Product Information successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        assignedCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignedCategory'
+        ats:
+          type: number
+          description: The available to sell (ATS) inventory value of the product. This is the calculated value.
+        brand:
+          type: string
+          description: The brand of the product.
+        bundledProducts:
+          type: array
+          items:
+            type: string
+        classificationCategory:
+          $ref: '#/components/schemas/AssignedCategory'
+        creationDate:
+          type: string
+          format: date-time
+        defaultVariantId:
+          type: string
+          description: The ID of the product's default variant. Read only.
+        ean:
+          type: string
+          description: The European Article Number of the product.
+        id:
+          type: string
+          description: The ID (SKU) of the product.
+          minLength: 1
+          maxLength: 100
+        image:
+          $ref: '#/components/schemas/Image'
+        imageGroups:
+          $ref: '#/components/schemas/ImageGroup'
+        inStock:
+          type: boolean
+          description: The flag that indicates if the product is in stock, or not.
+        lastModified:
+          type: string
+          format: date-time
+        localizedTaxClassId:
+          $ref: '#/components/schemas/LocalizedNameString'
+        longDescription:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        manufacturerName:
+          description: The name of the products manufacturer.
+          type: string
+        manufacturerSku:
+          description: The SKU of the products manufacturer.
+          type: string
+        master:
+          $ref: '#/components/schemas/Master'
+        name:
+          description: The localized name of the product.
+          $ref: '#/components/schemas/LocalizedMarkup'
+        online:
+          type: boolean
+          description: The flag that indicates if the product is online, or not.
+        onlineFlag:
+          description: The site specific online status of the product.
+          $ref: '#/components/schemas/LocalizedMarkup'
+        owningCatalogId:
+          type: string
+          description: The ID of the catalog that owns the product.
+        owningCatalogName:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        pageDescription:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        pageKeywords:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        pageTitle:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        price:
+          type: number
+          description: The price of the product.
+        priceCurrency:
+          type: string
+          description: The currency code for a products price.
+          example: GBP
+        pricePerUnit:
+          type: number
+          description: The price per unit of the product.
+        primaryCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignedCategory'
+        primaryCategoryId:
+          type: string
+          description: The ID of the products primary category. Read only.
+        productBundles:
+          type: array
+          items:
+            TODO
+        productOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOption'
+        productSets:
+          type: array
+          items:
+            TODO
+        searchable:
+          type: object
+          TODO - Another wanky site object thing
+        setProducts:
+          type: array
+          items:
+            TODO
+        shortDescription:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        taxClassId:
+          type: string
+        type:
+          type: object:
+            TODO
+        unit:
+          type: string
+          description: The sales unit of the product.
+        unitMeasure:
+          type: string
+          description: The unitMeasure of the product.
+        unitQuantity:
+          type: number
+          description: The unitQuantity of the product
+        upc:
+          type: string
+          description: The Universal Product Code (UPC) of the product.
+        validFrom:
+          type: object
+          TODO
+        validTo:
+          type: object
+            TODO
+        variants:
+          type: array
+          TODO
+    AssignedCategory:
+      type: object
+      properties:
+        catalogId:
+          type: string
+        categoryId:
+          type: string
+    Image:
+      type: object
+      description: The image(s) assigned to the product.
+      properties:
+        title:
+          type: object
+          description: The image title.
+        path:
+          description: The raw media file path
+          type: string
+          required: true
+          example: '/images/apple0ipod-classic.jpg'
+        alt:
+          type: object
+          description: The alternative image text.
+        disBaseUrl:
+          type: string
+          description: the Dynamic Image Service (DIS) base URL for product images only.
+        absUrl:
+          type: string
+          description: The absolute URL with request protocol.
+          example: https://www.dis-base-url/images/apple-ipod-classic.jpg
+    ImageGroup:
+      type: array
+      items:
+        type: object
+        properties:
+          images:
+            type: array
+            required: true
+            items:
+              $ref: '#/components/schemas/Image'
+          viewType:
+            type: string
+            required: true
+            example: hi-res
+          variationAttributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/VariationAttributes'
+    VariationAttribute:
+      type: object
+      properties:
+        attributeDefinitionId:
+          type: string
+          description: The ID of the requested attribute definition.
+          required: true
+          example: color
+        attributeDefinitionName:
+          $ref: '#/components/schemas/LocalizedNameString'
+          description: The localized display name of the variation attribute definition.
+        defaultValue:
+          type: string
+          description: Default variation attribute value
+          example: black
+        id:
+          type: string
+          description: The ID of the variation attribute.
+        name:
+          $ref: '#/components/schemas/LocalizedNameString'
+          description: The localized display name of the variation attribute.
+        shared:
+          type: boolean
+          description: Returns the value of attribute shared if attribute is local or shared.
+        slicing:
+          type: boolean
+          description: Returns the value of attribute slicing.
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariationAttributeValue'
+        variationAttributeType:
+          type: string
+          enum:
+            - string
+            - int
+            - unknown
+    VariationAttributeValue:
+      type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/LocalizedNameString'
+        image:
+          $ref: '#/components/schemas/Image'
+        imageSwatch:
+          $ref: '#/components/schemas/Image'
+        name:    
+          $ref: '#/components/schemas/LocalizedNameString'
+        orderable:
+          type: boolean
+          description: A flag indicating whether at least one variant with this variation attribute value is available to sell.
+        position:
+          type: number
+          description: The position of the value among all values of a variation attribute.
+        value:
+          type: string
+          required: true
+          example: red
+    LocalizedNameString:
+      type: object
+      properties:
+        default:
+          type: string
+      additionalProperties:
+        type: string
+    LocalizedMarkup:
+      type: object
+      properties:
+        default:
+          $ref: '#/components/schemas/Markup'
+      additionalProperties:
+        $ref: '#/components/schemas/Markup'
+    Markup:
+      type: object
+      properties:
+        markup:
+          type: string
+          required: true
+        source:
+          type: string
+          required: true
+    Master:
+      type: object
+      properties:
+        masterId:
+          type: string
+          required: true
+          description: The ID (SKU) of the master product
+          minLength: 1
+          maxLength: 100
+        orderable:
+          type: boolean
+          description: A flag indicating whether at least one of the variants is orderable.
+        price:
+          type: number
+          description: The minimum sales price of the related variants.
+        priceMax:
+          type: number
+          description: The maximum sales price of related variants.
+        prices:
+          type: object
+          properties:
+            default:
+              type: string
+          additionalProperties:
+            type: number
+    ProductOption:
+      type: object
+      properties:
+        customName:
+          description: The localized custom name of the product option.
+          $ref: '#/components/schemas/LocalizedNameString'
+        defaultProductOptionValue:
+          type: string
+          description: The default product option value.
+        description:
+          description: The localized description of the product option.
+          $ref: '#/components/schemeas/LocalizedNameString'
+        id:
+          type: string
+          description: The object attribute definition ID which is also the identifier for the product option.
+          required: true
+        image:
+          $ref: '#/components/schemas/Image'
+        name:
+          type: string
+          description: The name of the object attribute definition
+        selectedOptionValue:
+          type: string
+          description: The selected option value of the product option.
+        shared:
+          type: boolean
+          description: The flag that indicates if the product option is shared or local
+        sortingMode:
+          type: string
+          description: The sorting mode for the product option values.
+          enum: [byexplicitorder, byoptionprice]
+        values:
+          type: array
+          description: The sorted array of values of the product option.
+          items:
+            $ref: '#/components/schemas/ProductOptionValue'
+    ProductOptionValue:
+      type: object
+      properties:
+        defaultProductOptionValue:
+          type: boolean
+          description: Flag indicating if the product option value is the default value.
+        id:
+          type: string
+          description: The ID of the product option value.
+          minLength: 1
+        optionPrices:
+          type: array
+          description: The list of prices in the product option value.
+          items:
+            $ref: '#/components/schemas/Price'
+        skuExtension:
+          type: string
+          description: The SKU extension of the product option value.
+        value:
+          description: The localized value of the product option.
+          $ref: '#/components/schemas/LocalizedNameString'
+    Price:
+      type: object
+      properties:
+        currencyMnemonic:
+          type: string
+          required: true
+          description: The currency mnemonic for the money.
+          example: GBP
+        value:
+          type: number
+          description: The value for the money.
+          example: 199.99
+
