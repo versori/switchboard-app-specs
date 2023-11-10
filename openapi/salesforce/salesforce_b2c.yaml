@@ -158,8 +158,8 @@ components:
         taxClassId:
           type: string
         type:
-          type: object:
-            TODO
+          description: The type of the product. It can have one or more of the values item, master, variationGroup, variant, bundle and set. It is read only.
+          $ref: '#/components/schemas/ProductType' 
         unit:
           type: string
           description: The sales unit of the product.
@@ -180,7 +180,18 @@ components:
             TODO
         variants:
           type: array
-          TODO
+          description: The array of variants of the product. This is applicable for product types master and variationGroup only. It is read only.
+          items:
+            $ref: '#/components/schemas/Variant'
+        variationAttributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/VariationAttribute'
+        variationGroups:
+          type: array
+          description: The array of variation groups in the product. This is applicable for product type master only. It is read only.
+          items:
+            $ref: '#/components/schemas/VariationGroup'
     AssignedCategory:
       type: object
       properties:
@@ -227,7 +238,7 @@ components:
           variationAttributes:
             type: array
             items:
-              $ref: '#/components/schemas/VariationAttributes'
+              $ref: '#/components/schemas/VariationAttribute'
     VariationAttribute:
       type: object
       properties:
@@ -403,4 +414,91 @@ components:
           type: number
           description: The value for the money.
           example: 199.99
-
+    ProductType:
+      type: object
+      properties:
+        bundle:
+          type: boolean
+          description: A flag indicating whether the product is a bundle.
+        bundled:
+          type: boolean
+          description: A flag indicating whether the product is bundled.
+        item:
+          type: boolean
+          description: A flag indicating whether the product is a standard item.
+        master:
+          type: boolean
+          required: true
+          description: A flag indicating whether the product is a master.
+        option:
+          type: boolean
+          description: A flag indicating whether the product is an option.
+        partOfProductSet:
+          type: boolean
+          description: A flag indicating whether the product is a part of product set.
+        partOfRetailSet:
+          type: boolean
+          description: A flag indicating whether the product is part of retail set.
+        retailSet:
+          type: boolean
+          description: A flag indicating whether the product is a retail set.
+        set:
+          type: boolean
+          description: A flag indicating whether the product is a set.
+        variant:
+          type: boolean
+          description: A flag indicating whether the product is a variant.
+        variationGroup:
+          type: boolean
+          description: A flag indicating whether the product is a variation group.
+    Variant:
+      type: object
+      properties:
+        ats:
+          type: number
+          description: The Available To Sell (ATS) inventory value of the product.
+        defaultProductVariation:
+          type: boolean
+          description: A flag indicating whether the variant is a default variant.
+        image:
+          $ref: '#/components/schemas/Image'
+        inStock:
+          type: boolean
+          description: True if the product is in stock, false if not.
+        online:
+          type: boolean
+          description: If the product is currently online. True if online, false if not.
+        orderable:
+          type: boolean
+          description: A flag indicating whether the variant is orderable.
+        price:
+          type: number
+          description: The sales price of the variant.
+        priceCurrency:
+          type: string
+          description: The currency code for the price of the product.
+          example: GBP
+        productId:
+          type: string
+          description: The ID (SKU) of the variant.
+          minLength: 1
+          maxLength: 100
+          required: true
+        searchable:
+          type: object
+          additionalProperties:
+            type: boolean
+        variationAttributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariationAttribute'
+        variationValues:
+          type: object
+          additionalProperties:
+            type: string
+    VariationGroup:
+      type: object
+      properties:
+        orderable:
+          type: boolean
+          description: A flag indicating whether 
