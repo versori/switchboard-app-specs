@@ -5,22 +5,21 @@ info:
     The Salesforce B2C API.
 servers:
   - url: https://{shortCode}.api.commercecloud.salesforce.com
-    description: Base url for Salesforce B2C API
+    description: Base url for Salesforce B2C AP.I
     variables:
       shortCode:
         description: A region-specific merchant identifier.
+  - url: https:/{host}.dx.commercecloud.salesforce.com/s/-/dw/data/v23_2
+    description: Sandbox server url.
+    variables:
+      host:
+        description: 
 paths:
-  /product/products/v1/organisations/{organisationId}/products/{productId}:
+  /products/{productId}:
     get:
       operationId: GetProduct
-      summary: Action to get product information
+      summary: Action to get product information.
       parameters:
-        - name: organisationId
-          in: path
-          description: The organisations ID code.
-          required: true
-          schema:
-            type: string
         - name: productId
           in: path
           description: The ID of the product
@@ -40,6 +39,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
+  /product_search:
+    post:
+      operationId: Search for products.
+      parameters:
+        - name: siteId
+          in: query
+          description: The site context
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: number
+                  description: The number of returned documents.
+                  minimum: 1
+                  maximum: 200
+                db_start_record_:
+                  type: number
+                  description: The zero-based indesx of the record that we want to start with, used to optimize special handling.
+                  minimum: 0
+                expand:
+                  type: array
+                  description: List of expansions to be applied to each search results. Expands are optional.
+                  items:
+                    type: string
+                query:
+                  type: object
+                  required: true
+                  description: 'Document representing a query. A query contains a set of objects that define criteria used to select records. A query can contain one of the following: select, sort, start'
+                  # I would check the docs for that this looks like. We will probably have to customise it for the integration # https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+                select:
+                  type: string
+                  description: The field to be selected.
+                sorts:
+                  type: array
+                  description: The list of sort clauses configured for the search request. Sort clauses are optional.
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                      sort_order:
+                        type: string
+                start:
+                  type: number
+                  description: The zero-based index of the first search hit to include in the result.
+                  minimum: 0
 components:
   schemas:
     Product:
@@ -608,3 +659,4 @@ components:
         storeLocatorEnabled:
           type: boolean
           description: Whether this store should show up in store locator results.
+
