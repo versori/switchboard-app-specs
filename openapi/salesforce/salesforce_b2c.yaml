@@ -136,23 +136,28 @@ components:
           description: The ID of the products primary category. Read only.
         productBundles:
           type: array
+          description: Thge array of product bundles which the product belongs to. It is read only.
           items:
-            TODO
+            $ref: '#/components/schemas/Product' # TODO: not sure if this is correct
         productOptions:
           type: array
           items:
             $ref: '#/components/schemas/ProductOption'
         productSets:
           type: array
+          description: The array of product sets which the product belongs to. It is readonly.
           items:
-            TODO
+            $ref: '#/components/schemas/Product' # TODO: not sure if this is correct
         searchable:
           type: object
-          TODO - Another wanky site object thing
+          description: The site-specific searchable status of the product.
+          additionalProperties:
+            type: boolean
         setProducts:
           type: array
+          description: The array of set products which the product includes. It is read only.
           items:
-            TODO
+            $ref: '#/components/schemas/Product' # TODO: not sure if this is correct
         shortDescription:
           $ref: '#/components/schemas/LocalizedMarkup'
         taxClassId:
@@ -174,10 +179,22 @@ components:
           description: The Universal Product Code (UPC) of the product.
         validFrom:
           type: object
-          TODO
+          description: The valid/online from date of the product.
+          properties:
+            default:
+              type: string
+              format: date-time
+          additionalProperties:
+            type: string
         validTo:
           type: object
-            TODO
+          description: The valid/online to date of the product.
+          properties:
+            default:
+              type: string
+              format: date-time
+          additionalProperties:
+            type: string
         variants:
           type: array
           description: The array of variants of the product. This is applicable for product types master and variationGroup only. It is read only.
@@ -192,6 +209,11 @@ components:
           description: The array of variation groups in the product. This is applicable for product type master only. It is read only.
           items:
             $ref: '#/components/schemas/VariationGroup'
+        variationValues:
+          type: object
+          description: The map of variation values in the product. This is applicable for product type variant and variationGroup only. It is read only.
+          additionalProperties:
+            type: string
     AssignedCategory:
       type: object
       properties:
@@ -501,4 +523,88 @@ components:
       properties:
         orderable:
           type: boolean
-          description: A flag indicating whether 
+          description: A flag indicating whether the variation group is orderable.
+        price:
+          type: number
+          description: The sales price of the variation group.
+        productId:
+          type: string
+          description: The ID (SKU) of the variation group.
+          required: true
+          minLength: 1
+          maxLength: 100
+        variationValues:
+          type: object
+          additionalProperties:
+            type: string
+    Store:
+      type: object
+      properties:
+        address1:
+          type: string
+          description: The primary address of the store.
+        address2:
+          type: string
+          description: The secondary address of the store.
+        city:
+          type: string
+          description: The city of the store.
+        countryCode:
+          type: string
+          description: A two letter uppercase country code conforming to the ISO 3166-1 alpha-2 standard.
+        distance:
+          type: number
+          description: The distance to the given geolocation where the stores will be searched, using the unit given in the attribute DistanceUnit (miles or kilometers).
+        distanceUnit:
+          type: string
+          description: The unit of distance used in the attribute Distance.
+          enum: [mi, km]
+        email:
+          type: string
+          description: The email address of the store.
+        fax:
+          type: string
+          description: The fax number of the store.
+        id:
+          type: string
+          description: The ID of the store.
+          minLength: 1
+          maxLength: 256
+        image:
+          type: string
+          description: The store image.
+        inventoryId:
+          type: string
+          description: The inventory list id associated with this store.
+        latitude:
+          type: number
+          description: The latitude of the store.
+        longitude:
+          type: number
+          description: The longitude of the store.
+        name:
+          type: string
+          description: The name of the store.
+        phone:
+          type: string
+          description: The phone number of the store.
+        posEnabled:
+          type: boolean
+          description: Whether this store uses Store Point-of-Sale
+        postalCode:
+          type: string
+          description: The postal code of the store.
+          minLength: 3
+          maxLength: 10
+        stateCode:
+          type: string
+          description: The state code of the store.
+        storeEvents:
+          type: string
+          description: The store events.
+        storeHours:
+          type: string
+          description: The opening hours of the store.
+        storeLocatorEnabled:
+          type: boolean
+          description: Whether this store should show up in store locator results.
