@@ -56,12 +56,12 @@ paths:
               type: object
               properties:
                 count:
-                  type: number
+                  type: integer 
                   description: The number of returned documents.
                   minimum: 1
                   maximum: 200
                 db_start_record_:
-                  type: number
+                  type: integer 
                   description: The zero-based indesx of the record that we want to start with, used to optimize special handling.
                   minimum: 0
                 expand:
@@ -73,7 +73,7 @@ paths:
                   type: object
                   required: true
                   description: 'Document representing a query. A query contains a set of objects that define criteria used to select records. A query can contain one of the following: select, sort, start'
-                  # I would check the docs for that this looks like. We will probably have to customise it for the integration # https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+                  # I would check the docs for that this looks like. We will probably have to customise it for the integration
                 select:
                   type: string
                   description: The field to be selected.
@@ -88,9 +88,65 @@ paths:
                       sort_order:
                         type: string
                 start:
-                  type: number
+                  type: integer 
                   description: The zero-based index of the first search hit to include in the result.
                   minimum: 0
+      responses:
+      '200':
+        description: ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  description: The number of returned documents.
+                data:
+                  type: array
+                  items:
+                    type: string
+                db_start_record_:
+                  type: number
+                  description: The zero based index of the record we want to start with.
+                expand:
+                  type: array
+                  description: List of expansions to be applied to each search results.
+                  items:
+                    type: string
+                hits:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Product'
+                next:
+                  $ref: '#/components/schemas/Iterators'
+                previous:
+                  $ref: '#/components/schemas/Iterators'
+                query:
+                  type: object
+                  description: Query passed into request. # see above
+                select:
+                  type: string
+                  description: The fields that you want to select.
+                sorts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        required: True
+                        type: string
+                        description: The name of the field to sort on.
+                      sort_order:
+                        type: string
+                        enum: ['asc', 'desc']
+                        description: The sort order. Defaults to asc.
+                start:
+                  type: integer
+                  description: The zero based index of the first search hit to include in the result.
+                total:
+                  type: integer
+                  description: The total number of documents.
 components:
   schemas:
     Product:
@@ -659,4 +715,17 @@ components:
         storeLocatorEnabled:
           type: boolean
           description: Whether this store should show up in store locator results.
-
+    Iterators:
+      type: object
+      description: Data that can be used to get the next and previous page of a Data API results object
+      properties:
+        count:
+          type: integer
+          description: The number of returned documents.
+        db_start_record_:
+          type: integer
+          description: The zero based index of the record that we want to start with.
+        start:
+          type: integer
+          description: The zero based index of the first search hit to include in the result.
+    
