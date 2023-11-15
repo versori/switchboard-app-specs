@@ -380,7 +380,7 @@ components:
           $ref: '#/components/schemas/Master'
         name:
           description: The localized name of the product.
-          $ref: '#/components/schemas/LocalizedMarkup'
+          $ref: '#/components/schemas/LocalizedNameString'
         online:
           type: boolean
           description: The flag that indicates if the product is online, or not.
