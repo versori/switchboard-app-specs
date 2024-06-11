@@ -1,0 +1,953 @@
+openapi: 3.0.1
+info:
+  title: Salesforce B2C SCAPI.
+  version: v1
+  description: |-
+    The Salesforce Commerce API (SCAPI).
+servers:
+  - url: https://{shortCode}.api.commercecloud.salesforce.com
+    description: Base url for Salesforce B2C API
+    variables:
+      shortCode:
+        description: A region-specific merchant identifier.
+        default: 'test'
+paths:
+  /product/products/v1/organization/{organizationId}/{productId}:
+    get:
+      operationId: GetProduct
+      description: Action to get product information.
+      parameters:
+        - name: organizationId
+          description: The organizations ID
+          in: path
+          schema:
+            type: string
+        - name: productId
+          in: path
+          description: The ID of the product
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: The site context
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Retrieved Product Information successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /product/products/v1/organization/{organizationId}/product-search:
+    post:
+      operationId: SearchProducts
+      description: Search for products.
+      parameters:
+        - name: organizationId
+          in: path
+          description: The  organizations ID
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: The site context
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: The maximum number of search hits to return. Not to exceed 200.
+                  minimum: 1
+                  maximum: 200
+                query:
+                  $ref: '#/components/schemas/Query'
+                sorts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Sort'
+                offset:
+                  type: integer
+                  description: Used to retrieve the results based on a particular resource offset.
+                  minimum: 0
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sorts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sort'
+                    description: The sorting that was applied to the result.
+                  total:
+                    type: integer
+                    description: The total number of search hits. This can be greater than the number of results returned as search results are pagenated.
+                  offset:
+                    type: integer
+                    description: Used to retrieve the results based on a particular resource offset.
+                  limit:
+                    type: integer
+                    description: The maximum number of search hits to return. Not to exceed 200.
+                    minimum: 1
+                    maximum: 200
+                  query:
+                    $ref: '#/components/schemas/Query'
+                  hits:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                    description: A roted array of search hits. The array can be empty.
+  /store/shopper-stores/v1/organizations/{organizationId}/store-search:
+    get:
+      operationId: StoreSearch
+      description: Retrieve a list of stores for the given site that are within a configured distance of a geolocation.
+      parameters:
+        - name:  organizationId
+          in: path
+          description: The  organizations ID
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: The site context
+          required: true
+          schema:
+            type: string
+        - name: countryCode
+          in: query
+          description: A two letter uppercase country code conforming to the ISO 3166-1 alpha-2 standard.
+          schema:
+            type: string
+        - name: distanceUnit
+          in: query
+          description: The unit of distance used in the attribute Distance.
+          schema:
+            type: string
+            enum: [mi, km]
+        - name: maxDistance
+          in: query
+          description: The maximum distance in the distance unit specified in the attribute DistanceUnit.
+          schema:
+            type: number
+        - name: latitude
+          in: query
+          description: The latitude of the geolocation.
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          description: The longitude of the geolocation.
+          schema:
+            type: number
+        - name: postalCode
+          in: query
+          description: The postal code of the geolocation.
+          schema:
+            type: string
+        - name: locale
+          in: query
+          description: A descriptor to provide locale context for a geographical region by both a language and/or country code.
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: Used to retrieve the results based on a particular resource offset.
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: The maximum number of search hits to return. Not to exceed 200.
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 200
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  limit:
+                    type: integer
+                    description: The number of search results in the current page.
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Store'
+                    description: A list of stores.
+                  offset:
+                    type: integer
+                    description: Used to retrieve the results based on a particular resource offset.
+                    minimum: 0
+                    default: 0
+                  total:
+                    type: integer
+                    description: The total number of search results.
+  /store/shopper-stores/v1/organizations/{organizationId}/stores:
+    get:
+      operationId: GetStores
+      description: Returns stores identified by the IDs provided as input.
+      parameters:
+        - name: organizationId
+          in: path
+          description: The organizations ID
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: The identifier of the site that a request is being made in the context of.
+          required: true
+          schema:
+            type: string
+        - name: ids
+          in: query
+          description: A comma separated list of store IDs, maximum of 50.
+          required: true
+          schema:
+            type: string
+        - name: locale
+          in: query
+          description: A descriptor to provide locale context for a geographical region by both a language and/or country code.
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: Used to retrieve the results based on a particular resource offset.
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: The maximum number of search hits to return. Not to exceed 200.
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 200
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  limit:
+                    type: integer
+                    description: The number of search results in the current page
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Store'
+                  offset:
+                    type: integer
+                  total:
+                    type: integer
+                    description: The total number of search results.
+  /product/products/v1/organizations/{organizationId}/products/{productId}/variant-search:
+    post:
+      operationId: SearchVariants
+      description: Searches product variations for master product of variation group product.
+      parameters:
+        - name: organizationId
+          in: path
+          description: The organizations ID
+          schema:
+            type: string
+        - name: productId
+          in: path
+          description: The ID of the product
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: The site context
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: The maximum number of search hits to return. Not to exceed 200.
+                  minimum: 1
+                  maximum: 200
+                query:
+                  $ref: '#/components/schemas/Query'
+                sorts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Sort'
+                offset:
+                  type: integer
+                  description: Used to retrieve the results based on a particular resource offset.
+                  minimum: 0
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                sorts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Sort'
+                hits:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Variant'
+                query:
+                  $ref: '#/components/schemas/Query'
+                limit:
+                  type: integer
+                  description: Maximum records to retrieve per request.
+                offset:
+                  type: integer
+                total:
+                  type: integer
+components: 
+  schemas:
+    Product:
+      type: object
+      properties:
+        assignedCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignedCategory'
+        ats:
+          type: number
+          description: The available to sell (ATS) inventory value of the product. This is the calculated value.
+        brand:
+          type: string
+          description: The brand of the product.
+        bundledProducts:
+          type: array
+          items:
+            type: string
+        classificationCategory:
+          $ref: '#/components/schemas/AssignedCategory'
+        creationDate:
+          type: string
+          format: date-time
+        defaultVariantId:
+          type: string
+          description: The ID of the product's default variant. Read only.
+        ean:
+          type: string
+          description: The European Article Number of the product.
+        id:
+          type: string
+          description: The ID (SKU) of the product.
+          minLength: 1
+          maxLength: 100
+        image:
+          $ref: '#/components/schemas/Image'
+        imageGroups:
+          $ref: '#/components/schemas/ImageGroup'
+        inStock:
+          type: boolean
+          description: The flag that indicates if the product is in stock, or not.
+        lastModified:
+          type: string
+          format: date-time
+        localizedTaxClassId:
+          $ref: '#/components/schemas/LocalizedNameString'
+        longDescription:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        manufacturerName:
+          description: The name of the products manufacturer.
+          type: string
+        manufacturerSku:
+          description: The SKU of the products manufacturer.
+          type: string
+        master:
+          $ref: '#/components/schemas/Master'
+        name:
+          description: The localized name of the product.
+          $ref: '#/components/schemas/LocalizedNameString'
+        online:
+          type: boolean
+          description: The flag that indicates if the product is online, or not.
+        onlineFlag:
+          description: The site specific online status of the product.
+          $ref: '#/components/schemas/LocalizedMarkup'
+        owningCatalogId:
+          type: string
+          description: The ID of the catalog that owns the product.
+        owningCatalogName:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        pageDescription:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        pageKeywords:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        pageTitle:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        price:
+          type: number
+          description: The price of the product.
+        priceCurrency:
+          type: string
+          description: The currency code for a products price.
+          example: GBP
+        pricePerUnit:
+          type: number
+          description: The price per unit of the product.
+        primaryCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignedCategory'
+        primaryCategoryId:
+          type: string
+          description: The ID of the products primary category. Read only.
+        productBundles:
+          type: array
+          description: Thge array of product bundles which the product belongs to. It is read only.
+          items:
+            $ref: '#/components/schemas/Product' # TODO: not sure if this is correct
+        productOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOption'
+        productSets:
+          type: array
+          description: The array of product sets which the product belongs to. It is readonly.
+          items:
+            $ref: '#/components/schemas/Product' # TODO: not sure if this is correct
+        searchable:
+          type: object
+          description: The site-specific searchable status of the product.
+        setProducts:
+          type: array
+          description: The array of set products which the product includes. It is read only.
+          items:
+            $ref: '#/components/schemas/Product' # TODO: not sure if this is correct
+        shortDescription:
+          $ref: '#/components/schemas/LocalizedMarkup'
+        taxClassId:
+          type: string
+        type:
+          description: The type of the product. It can have one or more of the values item, master, variationGroup, variant, bundle and set. It is read only.
+          $ref: '#/components/schemas/ProductType' 
+        unit:
+          type: string
+          description: The sales unit of the product.
+        unitMeasure:
+          type: string
+          description: The unitMeasure of the product.
+        unitQuantity:
+          type: number
+          description: The unitQuantity of the product
+        upc:
+          type: string
+          description: The Universal Product Code (UPC) of the product.
+        validFrom:
+          type: object
+          description: The valid/online from date of the product.
+          properties:
+            default:
+              type: string
+              format: date-time
+          additionalProperties:
+            type: string
+        validTo:
+          type: object
+          description: The valid/online to date of the product.
+          properties:
+            default:
+              type: string
+              format: date-time
+          additionalProperties:
+            type: string
+        variants:
+          type: array
+          description: The array of variants of the product. This is applicable for product types master and variationGroup only. It is read only.
+          items:
+            $ref: '#/components/schemas/Variant'
+        variationAttributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/VariationAttribute'
+        variationGroups:
+          type: array
+          description: The array of variation groups in the product. This is applicable for product type master only. It is read only.
+          items:
+            $ref: '#/components/schemas/VariationGroup'
+        variationValues:
+          type: object
+          description: The map of variation values in the product. This is applicable for product type variant and variationGroup only. It is read only.
+          additionalProperties:
+            type: string
+    AssignedCategory:
+      type: object
+      properties:
+        catalogId:
+          type: string
+        categoryId:
+          type: string
+    Image:
+      type: object
+      description: The image(s) assigned to the product.
+      properties:
+        title:
+          type: object
+          description: The image title.
+        path:
+          description: The raw media file path
+          type: string
+          example: '/images/apple0ipod-classic.jpg'
+        alt:
+          type: object
+          description: The alternative image text.
+        disBaseUrl:
+          type: string
+          description: the Dynamic Image Service (DIS) base URL for product images only.
+        absUrl:
+          type: string
+          description: The absolute URL with request protocol.
+          example: https://www.dis-base-url/images/apple-ipod-classic.jpg
+    ImageGroup:
+      type: array
+      items:
+        type: object
+        properties:
+          images:
+            type: array
+            items:
+              $ref: '#/components/schemas/Image'
+          viewType:
+            type: string
+            example: hi-res
+          variationAttributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/VariationAttribute'
+    VariationAttribute:
+      type: object
+      properties:
+        attributeDefinitionId:
+          type: string
+          description: The ID of the requested attribute definition.
+          example: color
+        attributeDefinitionName:
+          $ref: '#/components/schemas/LocalizedNameString'
+          description: The localized display name of the variation attribute definition.
+        defaultValue:
+          type: string
+          description: Default variation attribute value
+          example: black
+        id:
+          type: string
+          description: The ID of the variation attribute.
+        name:
+          $ref: '#/components/schemas/LocalizedNameString'
+          description: The localized display name of the variation attribute.
+        shared:
+          type: boolean
+          description: Returns the value of attribute shared if attribute is local or shared.
+        slicing:
+          type: boolean
+          description: Returns the value of attribute slicing.
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariationAttributeValue'
+        variationAttributeType:
+          type: string
+          enum:
+            - string
+            - int
+            - unknown
+    VariationAttributeValue:
+      type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/LocalizedNameString'
+        image:
+          $ref: '#/components/schemas/Image'
+        imageSwatch:
+          $ref: '#/components/schemas/Image'
+        name:    
+          $ref: '#/components/schemas/LocalizedNameString'
+        orderable:
+          type: boolean
+          description: A flag indicating whether at least one variant with this variation attribute value is available to sell.
+        position:
+          type: number
+          description: The position of the value among all values of a variation attribute.
+        value:
+          type: string
+          example: red
+    LocalizedNameString:
+      type: object
+      properties:
+        default:
+          type: string
+      additionalProperties:
+        type: string
+    LocalizedMarkup:
+      type: object
+      properties:
+        default:
+          $ref: '#/components/schemas/Markup'
+      additionalProperties:
+        $ref: '#/components/schemas/Markup'
+    Markup:
+      type: object
+      properties:
+        markup:
+          type: string
+        source:
+          type: string
+    Master:
+      type: object
+      properties:
+        masterId:
+          type: string
+          description: The ID (SKU) of the master product
+          minLength: 1
+          maxLength: 100
+        orderable:
+          type: boolean
+          description: A flag indicating whether at least one of the variants is orderable.
+        price:
+          type: number
+          description: The minimum sales price of the related variants.
+        priceMax:
+          type: number
+          description: The maximum sales price of related variants.
+        prices:
+          type: object
+          properties:
+            default:
+              type: string
+          additionalProperties:
+            type: number
+    ProductOption:
+      type: object
+      properties:
+        customName:
+          description: The localized custom name of the product option.
+          $ref: '#/components/schemas/LocalizedNameString'
+        defaultProductOptionValue:
+          type: string
+          description: The default product option value.
+        description:
+          description: The localized description of the product option.
+          $ref: '#/components/schemas/LocalizedNameString'
+        id:
+          type: string
+          description: The object attribute definition ID which is also the identifier for the product option.
+        image:
+          $ref: '#/components/schemas/Image'
+        name:
+          type: string
+          description: The name of the object attribute definition
+        selectedOptionValue:
+          type: string
+          description: The selected option value of the product option.
+        shared:
+          type: boolean
+          description: The flag that indicates if the product option is shared or local
+        sortingMode:
+          type: string
+          description: The sorting mode for the product option values.
+          enum: [byexplicitorder, byoptionprice]
+        values:
+          type: array
+          description: The sorted array of values of the product option.
+          items:
+            $ref: '#/components/schemas/ProductOptionValue'
+    ProductOptionValue:
+      type: object
+      properties:
+        defaultProductOptionValue:
+          type: boolean
+          description: Flag indicating if the product option value is the default value.
+        id:
+          type: string
+          description: The ID of the product option value.
+          minLength: 1
+        optionPrices:
+          type: array
+          description: The list of prices in the product option value.
+          items:
+            $ref: '#/components/schemas/Price'
+        skuExtension:
+          type: string
+          description: The SKU extension of the product option value.
+        value:
+          description: The localized value of the product option.
+          $ref: '#/components/schemas/LocalizedNameString'
+    Price:
+      type: object
+      properties:
+        currencyMnemonic:
+          type: string
+          description: The currency mnemonic for the money.
+          example: GBP
+        value:
+          type: number
+          description: The value for the money.
+          example: 199.99
+    ProductType:
+      type: object
+      properties:
+        bundle:
+          type: boolean
+          description: A flag indicating whether the product is a bundle.
+        bundled:
+          type: boolean
+          description: A flag indicating whether the product is bundled.
+        item:
+          type: boolean
+          description: A flag indicating whether the product is a standard item.
+        master:
+          type: boolean
+          description: A flag indicating whether the product is a master.
+        option:
+          type: boolean
+          description: A flag indicating whether the product is an option.
+        partOfProductSet:
+          type: boolean
+          description: A flag indicating whether the product is a part of product set.
+        partOfRetailSet:
+          type: boolean
+          description: A flag indicating whether the product is part of retail set.
+        retailSet:
+          type: boolean
+          description: A flag indicating whether the product is a retail set.
+        set:
+          type: boolean
+          description: A flag indicating whether the product is a set.
+        variant:
+          type: boolean
+          description: A flag indicating whether the product is a variant.
+        variationGroup:
+          type: boolean
+          description: A flag indicating whether the product is a variation group.
+    Variant:
+      type: object
+      properties:
+        ats:
+          type: number
+          description: The Available To Sell (ATS) inventory value of the product.
+        defaultProductVariation:
+          type: boolean
+          description: A flag indicating whether the variant is a default variant.
+        image:
+          $ref: '#/components/schemas/Image'
+        inStock:
+          type: boolean
+          description: True if the product is in stock, false if not.
+        online:
+          type: boolean
+          description: If the product is currently online. True if online, false if not.
+        orderable:
+          type: boolean
+          description: A flag indicating whether the variant is orderable.
+        price:
+          type: number
+          description: The sales price of the variant.
+        priceCurrency:
+          type: string
+          description: The currency code for the price of the product.
+          example: GBP
+        productId:
+          type: string
+          description: The ID (SKU) of the variant.
+          minLength: 1
+          maxLength: 100
+        searchable:
+          type: object
+        variationAttributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariationAttribute'
+        variationValues:
+          type: object
+          additionalProperties:
+            type: string
+    VariationGroup:
+      type: object
+      properties:
+        orderable:
+          type: boolean
+          description: A flag indicating whether the variation group is orderable.
+        price:
+          type: number
+          description: The sales price of the variation group.
+        productId:
+          type: string
+          description: The ID (SKU) of the variation group.
+          minLength: 1
+          maxLength: 100
+        variationValues:
+          type: object
+          additionalProperties:
+            type: string
+    Store:
+      type: object
+      properties:
+        address1:
+          type: string
+          description: The primary address of the store.
+        address2:
+          type: string
+          description: The secondary address of the store.
+        city:
+          type: string
+          description: The city of the store.
+        countryCode:
+          type: string
+          description: A two letter uppercase country code conforming to the ISO 3166-1 alpha-2 standard.
+        distance:
+          type: number
+          description: The distance to the given geolocation where the stores will be searched, using the unit given in the attribute DistanceUnit (miles or kilometers).
+        distanceUnit:
+          type: string
+          description: The unit of distance used in the attribute Distance.
+          enum: [mi, km]
+        email:
+          type: string
+          description: The email address of the store.
+        fax:
+          type: string
+          description: The fax number of the store.
+        id:
+          type: string
+          description: The ID of the store.
+          minLength: 1
+          maxLength: 256
+        image:
+          type: string
+          description: The store image.
+        inventoryId:
+          type: string
+          description: The inventory list id associated with this store.
+        latitude:
+          type: number
+          description: The latitude of the store.
+        longitude:
+          type: number
+          description: The longitude of the store.
+        name:
+          type: string
+          description: The name of the store.
+        phone:
+          type: string
+          description: The phone number of the store.
+        posEnabled:
+          type: boolean
+          description: Whether this store uses Store Point-of-Sale
+        postalCode:
+          type: string
+          description: The postal code of the store.
+          minLength: 3
+          maxLength: 10
+        stateCode:
+          type: string
+          description: The state code of the store.
+        storeEvents:
+          type: string
+          description: The store events.
+        storeHours:
+          type: string
+          description: The opening hours of the store.
+        storeLocatorEnabled:
+          type: boolean
+          description: Whether this store should show up in store locator results.
+    Iterators:
+      type: object
+      description: Data that can be used to get the next and previous page of a Data API results object
+      properties:
+        count:
+          type: integer
+          description: The number of returned documents.
+        db_start_record_:
+          type: integer
+          description: The zero based index of the record that we want to start with.
+        start:
+          type: integer
+          description: The zero based index of the first search hit to include in the result.
+    Query:
+      type: object
+      properties:
+        boolQuery:
+          $ref: '#/components/schemas/BoolQuery'
+        termQuery:
+          $ref: '#/components/schemas/TermQuery'
+        textQuery:
+          $ref: '#/components/schemas/TextQuery'
+    TextQuery:
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            type: string
+        searchPhrase:
+          type: string
+    TermQuery:
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            type: string
+        operator:
+          type: string
+          enum: [is, one_of, is_null, is_not_null, less, greater, not_in, neq]
+        values:
+          type: array
+          items:
+            type: string
+    BoolQuery:
+      type: object
+      properties:
+        must:
+          type: array
+          items:
+            $ref: '#/components/schemas/Query'
+        mustNot:
+          type: array
+          items:
+            $ref: '#/components/schemas/Query'
+        should:
+          type: array
+          items:
+            $ref: '#/components/schemas/Query'
+    Sort:
+      type: object
+      properties:
+        field:
+          type: string
+          description: The name of the field to sort on.
+        sortOrder:
+          type: string
+          enum: [asc, desc]
+          description: The sort order. Defaults to asc.
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://account.demandware.com/dwsso/oauth2/authorize
+          tokenUrl: https://account.demandware.com/dwsso/oauth2/access_token
+          scopes: 
+            sfcc.products.rw: Can read and write products
