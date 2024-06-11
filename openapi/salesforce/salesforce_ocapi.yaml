@@ -12,7 +12,7 @@ servers:
 paths:
   /products/{productId}/variant_search:
     post:
-      operationId: SearchVariants
+      operationId: SearchVariantsLMAO
       description: Search for variants.
       parameters:
         - name: productId
@@ -87,7 +87,7 @@ paths:
                     description: The total number of documents.
   /products/{productId}:
     get:
-      operationId: GetProduct
+      operationId: GetProductLMAO
       summary: Action to get product information.
       parameters:
         - name: productId
@@ -109,7 +109,7 @@ paths:
                 $ref: '#/components/schemas/Product'
   /product_search:
     post:
-      operationId: ProductSearch
+      operationId: ProductSearchLMAO
       description: Search for products.
       parameters:
         - name: siteId
@@ -179,7 +179,7 @@ paths:
                     description: The total number of documents.
   /sites/{site_id}/store_search:
     post:
-      operationId: SearchStores
+      operationId: SearchStoresLMAO
       description: Searches for stores.
       parameters:
         - name: site_id
@@ -905,6 +905,6 @@ components:
     OAuth2:
       type: oauth2
       flows:
-        authorization_code:
-          authorization_url: https://account.demandware.com/dwsso/oauth2/authorize
-          token_url: https://account.demandware.com/dwsso/oauth2/access_token
+        authorizationCode:
+          authorizationUrl: https://account.demandware.com/dwsso/oauth2/authorize
+          tokenUrl: https://account.demandware.com/dwsso/oauth2/access_token

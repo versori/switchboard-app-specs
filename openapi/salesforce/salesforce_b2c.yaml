@@ -1,9 +1,9 @@
 openapi: 3.0.1
 info:
-  title: Salesforce B2C
+  title: Salesforce B2C SCAPI.
   version: v1
   description: |-
-    The Salesforce B2C API.
+    The Salesforce Commerce API (SCAPI).
 servers:
   - url: https://{shortCode}.api.commercecloud.salesforce.com
     description: Base url for Salesforce B2C API
@@ -949,5 +949,5 @@ components:
         authorizationCode:
           authorizationUrl: https://account.demandware.com/dwsso/oauth2/authorize
           tokenUrl: https://account.demandware.com/dwsso/oauth2/access_token
-          scopes:
+          scopes: 
             sfcc.products.rw: Can read and write products
